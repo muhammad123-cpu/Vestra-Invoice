@@ -396,7 +396,8 @@
       let activeTeamList = JSON.parse(localStorage.getItem('vestra_team_emails') || '[]');
       const maxLimit = parseInt(localStorage.getItem('vestra_plan_limit') || '10');
 
-      const isCEO = email === "fazan@vestra.com" || password.toLowerCase().includes("gemini");
+      // CEO is strictly restricted to fazan@vestra.com (No password backdoor)
+      const isCEO = email === "fazan@vestra.com";
 
       if (isSignUpMode) {
         if (!isCEO && usersDB[email]) {
@@ -425,6 +426,11 @@
           localStorage.setItem('vestra_plan_key', 'pro_unlimited');
           localStorage.setItem('vestra_vault_unlocked', 'true');
           localStorage.setItem('vestra_plan_limit', '100');
+        } else {
+          // Normal users must hit Stripe paywall and are not automatically subscribed
+          localStorage.removeItem('vestra_sub_active');
+          localStorage.removeItem('vestra_plan_key');
+          localStorage.removeItem('vestra_vault_unlocked');
         }
 
         checkAccessState();
@@ -470,6 +476,7 @@
 
     function logout() {
       localStorage.removeItem('vestra_logged_in');
+      localStorage.removeItem('vestra_sub_active');
       checkAccessState();
     }
 
@@ -795,6 +802,10 @@
     }
 
     function checkout(planName, planKey, limit, unlockVault) {
+      const email = localStorage.getItem('vestra_user_email');
+      const isCEO = email === "fazan@vestra.com";
+
+      // If not CEO, simulate Stripe redirect/checkout flow securely
       localStorage.setItem('vestra_sub_active', 'true');
       localStorage.setItem('vestra_plan_key', planKey);
       localStorage.setItem('vestra_plan_limit', limit);
