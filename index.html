@@ -27,7 +27,7 @@
 </head>
 <body class="bg-[#050811] text-slate-100 min-h-screen flex flex-col selection:bg-blue-500 selection:text-white">
 
-  <!-- STEP 1: AUTHENTICATION SCREEN (Email & Password Only) -->
+  <!-- STEP 1: AUTHENTICATION SCREEN -->
   <div id="auth-screen" class="fixed inset-0 z-50 bg-[#050811] flex items-center justify-center p-4">
     <div class="glass-card w-full max-w-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-slate-800">
       <div class="flex flex-col items-center mb-6">
@@ -42,6 +42,9 @@
         <p id="auth-subtitle" class="text-xs text-slate-400 mt-1 text-center">Create your secure account or login to manage invoices</p>
       </div>
 
+      <!-- Error / Alert Message Banner -->
+      <div id="auth-error" class="hidden mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold text-center"></div>
+
       <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
         <div>
           <label class="block text-[11px] font-semibold text-slate-300 mb-1.5">Email Address</label>
@@ -50,7 +53,7 @@
         <div>
           <div class="flex items-center justify-between mb-1.5">
             <label class="block text-[11px] font-semibold text-slate-300">Password</label>
-            <a href="#" onclick="alert('Password reset link sent to your registered email.')" class="text-[10px] text-blue-400 hover:underline">Forgot password?</a>
+            <a href="#" onclick="alert('Password reset instructions sent to your registered email.')" class="text-[10px] text-blue-400 hover:underline">Forgot password?</a>
           </div>
           <input type="password" id="auth-password" required placeholder="••••••••" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500">
         </div>
@@ -65,7 +68,7 @@
     </div>
   </div>
 
-  <!-- STEP 2: SUBSCRIPTION PAYWALL (Appears if logged in but unpaid) -->
+  <!-- STEP 2: SUBSCRIPTION PAYWALL -->
   <div id="paywall-screen" class="hidden fixed inset-0 z-50 bg-[#050811] flex items-center justify-center p-4 overflow-y-auto">
     <div class="max-w-4xl w-full py-10">
       <div class="text-center mb-8">
@@ -77,7 +80,7 @@
           </svg>
         </div>
         <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-wider">CHOOSE YOUR SUBSCRIPTION</h1>
-        <p class="text-xs sm:text-sm text-slate-400 mt-2">Your account is active. Select a plan below to instantly unlock the voice invoicing engine.</p>
+        <p class="text-xs sm:text-sm text-slate-400 mt-2">Select a team plan below. Limits apply per account workspace.</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -87,9 +90,10 @@
             <span class="text-[10px] font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full uppercase border border-blue-500/20">Flexible</span>
             <h3 class="font-bold text-lg text-white mt-3">1 Day Pass</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£0.99</span><span class="text-slate-400 text-xs"> / day</span></div>
-            <p class="text-[11px] text-emerald-400 font-semibold mb-4">⚡ Instant 24-Hour Access</p>
+            <p class="text-[11px] text-emerald-400 font-semibold mb-2">⚡ Instant 24-Hour Access</p>
+            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 10 employee users</p>
           </div>
-          <button onclick="checkout('1 Day Pass')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Get 1 Day Pass</button>
+          <button onclick="checkout('1 Day Pass', 10)" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Get 1 Day Pass</button>
         </div>
         <!-- Standard Plan -->
         <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
@@ -97,9 +101,10 @@
             <span class="text-[10px] font-extrabold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full uppercase border border-indigo-500/20">Best Value</span>
             <h3 class="font-bold text-lg text-white mt-3">Standard Plan</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£3.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
-            <p class="text-[11px] text-emerald-400 font-semibold mb-4">✨ 3 Days Free Trial Included</p>
+            <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
+            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 25 employee users</p>
           </div>
-          <button onclick="checkout('Standard Plan')" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
+          <button onclick="checkout('Standard Plan', 25)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
         </div>
         <!-- Pro Unlimited -->
         <div class="glass-card p-6 rounded-3xl border-2 border-blue-500 relative flex flex-col justify-between shadow-2xl">
@@ -107,9 +112,10 @@
             <span class="text-[10px] font-extrabold text-blue-300 bg-blue-500/20 px-2.5 py-1 rounded-full uppercase">Unlimited Access</span>
             <h3 class="font-bold text-lg text-white mt-3">Pro Unlimited</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£4.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
-            <p class="text-[11px] text-emerald-400 font-semibold mb-4">✨ 3 Days Free Trial Included</p>
+            <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
+            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 100 employee users</p>
           </div>
-          <button onclick="checkout('Pro Unlimited')" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg cursor-pointer">Start Free Trial</button>
+          <button onclick="checkout('Pro Unlimited', 100)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg cursor-pointer">Start Free Trial</button>
         </div>
       </div>
       <div class="text-center mt-6">
@@ -288,7 +294,7 @@
     <div id="view-pricing" class="hidden max-w-5xl mx-auto py-8">
       <div class="text-center mb-10">
         <h2 class="text-3xl font-extrabold text-white">Choose Your Vestra Plan</h2>
-        <p class="text-xs text-slate-400 mt-2">Secure checkout via Stripe. Cancel anytime.</p>
+        <p class="text-xs text-slate-400 mt-2">Secure checkout via Stripe. Team member limits apply.</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
@@ -296,27 +302,30 @@
             <span class="text-[10px] font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full uppercase border border-blue-500/20">Flexible</span>
             <h3 class="font-bold text-lg text-white mt-3">1 Day Pass</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£0.99</span><span class="text-slate-400 text-xs"> / day</span></div>
-            <p class="text-[11px] text-emerald-400 font-semibold mb-4">⚡ Instant 24-Hour Access</p>
+            <p class="text-[11px] text-emerald-400 font-semibold mb-2">⚡ Instant 24-Hour Access</p>
+            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 10 employee users</p>
           </div>
-          <button onclick="checkout('1 Day Pass')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Get 1 Day Pass</button>
+          <button onclick="checkout('1 Day Pass', 10)" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Get 1 Day Pass</button>
         </div>
         <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
           <div>
             <span class="text-[10px] font-extrabold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full uppercase border border-indigo-500/20">Best Value</span>
             <h3 class="font-bold text-lg text-white mt-3">Standard Plan</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£3.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
-            <p class="text-[11px] text-emerald-400 font-semibold mb-4">✨ 3 Days Free Trial Included</p>
+            <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
+            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 25 employee users</p>
           </div>
-          <button onclick="checkout('Standard Plan')" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
+          <button onclick="checkout('Standard Plan', 25)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
         </div>
         <div class="glass-card p-6 rounded-3xl border-2 border-blue-500 relative flex flex-col justify-between shadow-2xl">
           <div>
             <span class="text-[10px] font-extrabold text-blue-300 bg-blue-500/20 px-2.5 py-1 rounded-full uppercase">Unlimited Access</span>
             <h3 class="font-bold text-lg text-white mt-3">Pro Unlimited</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£4.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
-            <p class="text-[11px] text-emerald-400 font-semibold mb-4">✨ 3 Days Free Trial Included</p>
+            <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
+            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 100 employee users</p>
           </div>
-          <button onclick="checkout('Pro Unlimited')" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg cursor-pointer">Start Free Trial</button>
+          <button onclick="checkout('Pro Unlimited', 100)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg cursor-pointer">Start Free Trial</button>
         </div>
       </div>
     </div>
@@ -333,12 +342,89 @@
       document.getElementById('auth-submit-btn').innerText = isSignUpMode ? "Sign Up" : "Log In";
       document.getElementById('auth-switch-text').innerText = isSignUpMode ? "Already have an account?" : "Don't have an account?";
       document.getElementById('auth-switch-link').innerText = isSignUpMode ? "Log in" : "Sign up";
+      hideError();
     }
 
+    function showError(msg) {
+      const errBox = document.getElementById('auth-error');
+      errBox.innerText = msg;
+      errBox.classList.remove('hidden');
+    }
+
+    function hideError() {
+      const errBox = document.getElementById('auth-error');
+      errBox.innerText = '';
+      errBox.classList.add('hidden');
+    }
+
+    // Secure Authentication Handler with Strict Password Check & Team Limits
     function handleAuthSubmit(e) {
       e.preventDefault();
-      const email = document.getElementById('auth-email').value;
-      if (email) {
+      hideError();
+
+      const email = document.getElementById('auth-email').value.trim().toLowerCase();
+      const password = document.getElementById('auth-password').value;
+
+      // Get stored user accounts registry or initialize
+      let usersDB = JSON.parse(localStorage.getItem('vestra_users_db') || '{}');
+      let activeTeamList = JSON.parse(localStorage.getItem('vestra_team_emails') || '[]');
+      const maxLimit = parseInt(localStorage.getItem('vestra_plan_limit') || '10');
+
+      if (isSignUpMode) {
+        // SIGN UP MODE
+        if (usersDB[email]) {
+          showError("An account with this email already exists. Please log in.");
+          return;
+        }
+
+        // Check team limit if a plan limit is set
+        if (!activeTeamList.includes(email) && activeTeamList.length >= maxLimit) {
+          showError(`Team limit reached (${maxLimit} users max for this plan). Please upgrade or contact your administrator.`);
+          return;
+        }
+
+        // Save new user credentials
+        usersDB[email] = password;
+        localStorage.setItem('vestra_users_db', JSON.stringify(usersDB));
+
+        if (!activeTeamList.includes(email)) {
+          activeTeamList.push(email);
+          localStorage.setItem('vestra_team_emails', JSON.stringify(activeTeamList));
+        }
+
+        localStorage.setItem('vestra_logged_in', 'true');
+        localStorage.setItem('vestra_user_email', email);
+        checkAccessState();
+
+      } else {
+        // LOGIN MODE
+        if (!usersDB[email]) {
+          // If user didn't register on this browser yet, check if it's a valid employee email or let them in if database is empty for testing
+          if (Object.keys(usersDB).length === 0) {
+            usersDB[email] = password;
+            localStorage.setItem('vestra_users_db', JSON.stringify(usersDB));
+          } else {
+            showError("No account found with this email. Please sign up first.");
+            return;
+          }
+        }
+
+        // STRICT PASSWORD CHECK
+        if (usersDB[email] !== password) {
+          showError("Incorrect password. Please try again or click 'Forgot password?'.");
+          return;
+        }
+
+        // Check if team member limit allows login
+        if (!activeTeamList.includes(email)) {
+          if (activeTeamList.length >= maxLimit) {
+            showError(`Workspace limit reached (${maxLimit} maximum users). Cannot log in.`);
+            return;
+          }
+          activeTeamList.push(email);
+          localStorage.setItem('vestra_team_emails', JSON.stringify(activeTeamList));
+        }
+
         localStorage.setItem('vestra_logged_in', 'true');
         localStorage.setItem('vestra_user_email', email);
         checkAccessState();
@@ -347,7 +433,6 @@
 
     function logout() {
       localStorage.removeItem('vestra_logged_in');
-      localStorage.removeItem('vestra_sub_active');
       checkAccessState();
     }
 
@@ -503,7 +588,8 @@
       window.open(`https://wa.me/?text=` + encodeURIComponent(`Hi ${client}, here is your invoice from Vestra Trade Services for ${total}.`), '_blank');
     }
 
-    function checkout(plan) {
+    function checkout(plan, limit) {
+      localStorage.setItem('vestra_plan_limit', limit);
       if (plan === '1 Day Pass') window.location.href = "https://buy.stripe.com/test_5kQaEX8Bn2dK5QC7DG08g03";
       else if (plan === 'Standard Plan') window.location.href = "https://buy.stripe.com/test_dRmfZhaJvaKgdj46zC08g04";
       else window.location.href = "https://buy.stripe.com/test_3cI14n5pb4lSgvg5vy08g05";
