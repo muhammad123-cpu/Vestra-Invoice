@@ -1,58 +1,373 @@
-function parseTextDetails() {
-      let text = document.getElementById('jobInput').value.trim();
-      if (!text) return;
-      
-      // 1. Normalize spoken words like "8 pounds" or "8 lb" into "£8" automatically
-      text = text.replace(/(\d+(?:\.\d+)?)\s*(?:pounds|pound|lb|lbs)\b/gi, '£$1');
-      
-      // 2. Extract client name if specified (e.g., "client is Sophia")
-      const clientMatch = text.match(/client\s+(?:name\s+is\s+|is\s+)([a-zA-Z\s]+?)(?:\s+at|\s+for|\s+on|\.|$)/i);
-      if (clientMatch && clientMatch[1]) {
-        document.getElementById('clientNameInput').value = clientMatch[1].trim();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vestra Invoice - Voice Invoicing Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #0b0f19;
+        color: #f3f4f6;
       }
-      
-      // 3. Extract address if specified (e.g., "at 12 High Street")
-      const addressMatch = text.match(/at\s+(\d+[^.]+?)(?:\.|$)/i);
-      if (addressMatch && addressMatch[1]) {
-        document.getElementById('clientAddressInput').value = addressMatch[1].trim();
-      }
-      
-      // 4. Split multi-item sentences by "and" or commas so each clause is processed separately
-      // e.g., "I spent £8 on food" AND "fitted sockets for £10"
-      let clauses = text.split(/\s+and\s+|,/gi);
-      let parsed = [];
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-6">
 
-      clauses.forEach(clause => {
-        clause = clause.trim();
-        // Match any clause containing a price pattern (e.g., £8, £10.00)
-        let priceRegex = /(?:I\s+)?(?:spent|paid|charged|bought)?\s*(.*?)\s+(?:for|at|on)?\s*£\s*(\d+(?:\.\d+)?)/i;
-        let match = clause.match(priceRegex);
+    <!-- Top Navigation / Header -->
+    <header class="max-w-7xl mx-auto w-full flex justify-between items-center mb-8">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 p-2 rounded-xl text-white font-bold text-xl">V</div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight">VESTRA</h1>
+                <p class="text-xs text-gray-400">VOICE INVOICING ENGINE</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-500 transition">1. Studio</button>
+            <button class="text-gray-400 hover:text-white px-4 py-2 text-sm font-medium transition">2. Plans & Pricing</button>
+            <button class="text-gray-400 hover:text-white text-sm font-medium transition">Sign Out</button>
+        </div>
+    </header>
 
-        if (match) {
-          let desc = match[1].replace(/client\s+is\s+[a-zA-Z\s]+/gi, '').replace(/^(and|,|\.|\s)+/gi, '').trim();
-          let amt = parseFloat(match[2]);
+    <!-- Main Workspace -->
+    <main class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Left Column: Controls -->
+        <div class="lg:col-span-5 space-y-6">
+            
+            <!-- Record or Type Box -->
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl relative">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-indigo-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">1</span>
+                        <h2 class="font-semibold text-sm">Record or Type Details</h2>
+                    </div>
+                    <span class="text-xs text-indigo-400 bg-indigo-950 border border-indigo-800 px-2 py-0.5 rounded-full">Voice AI</span>
+                </div>
 
-          if (!desc || desc.toLowerCase() === 'i' || desc.toLowerCase() === 'spent' || desc.toLowerCase() === 'paid' || desc.toLowerCase() === 'cost') {
-            desc = "Expense / Item";
-          }
+                <textarea id="jobInput" rows="4" class="w-full bg-gray-950 border border-gray-800 rounded-xl p-4 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition mb-4 resize-none" placeholder="e.g. I spent £8 on food and fitted sockets for £10 and the client's name is Sophia"></textarea>
 
-          if (!isNaN(amt)) {
-            parsed.push({ desc: desc.charAt(0).toUpperCase() + desc.slice(1), amount: amt });
-          }
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="toggleVoiceRecording()" id="recordBtn" class="bg-red-600 hover:bg-red-500 text-white py-3 px-4 rounded-xl text-sm font-medium flex items-center justify-center space-x-2 transition shadow-lg shadow-red-950/50">
+                        <span>🎙️ Record Voice</span>
+                    </button>
+                    <button onclick="parseTextDetails()" class="bg-indigo-600 hover:bg-indigo-500 text-white py-3 px-4 rounded-xl text-sm font-medium flex items-center justify-center space-x-2 transition shadow-lg shadow-indigo-950/50">
+                        <span>⚡ Build Invoice</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Business & Client Info Section -->
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl space-y-4">
+                <div class="flex items-center space-x-2 mb-2">
+                    <span class="bg-indigo-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">2</span>
+                    <h2 class="font-semibold text-sm">Business & Client Info</h2>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Your Trading Name</label>
+                    <input type="text" id="tradingNameInput" value="Vestra Trade Services" oninput="updateSettings()" class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Bank Sort Code & Account No.</label>
+                    <input type="text" id="bankInfoInput" value="20-40-60 | 87654321" oninput="updateSettings()" class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Client Name</label>
+                        <input type="text" id="clientNameInput" value="John Smith" oninput="updateSettings()" class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Job Site Address</label>
+                        <input type="text" id="clientAddressInput" value="12 High Street" oninput="updateSettings()" class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Tax / VAT (%)</label>
+                        <input type="number" id="taxRateInput" value="20" oninput="updateSettings()" class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Discount (£)</label>
+                        <input type="number" id="discountInput" value="0" oninput="updateSettings()" class="w-full bg-gray-950 border border-gray-800 rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Live Invoice Preview -->
+        <div class="lg:col-span-7">
+            <div class="bg-white text-gray-900 rounded-3xl p-8 shadow-2xl relative">
+                
+                <!-- Invoice Header -->
+                <div class="flex justify-between items-start border-b border-gray-100 pb-6 mb-6">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-gray-900 text-white p-3 rounded-2xl font-bold text-xl">V</div>
+                        <div>
+                            <h3 id="previewTradingName" class="font-bold text-lg text-gray-900">Vestra Trade Services</h3>
+                            <p class="text-xs text-gray-500">Official Tax Invoice</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="bg-blue-50 text-blue-600 text-xs font-bold px-2.5 py-1 rounded-md tracking-wider">INVOICE</span>
+                        <p class="text-xs font-bold text-gray-500 mt-2">#INV-1001</p>
+                        <p class="text-xs text-gray-400">03/10/2026</p>
+                    </div>
+                </div>
+
+                <!-- Client Details Banner -->
+                <div class="grid grid-cols-2 bg-gray-50 rounded-2xl p-4 mb-6">
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 tracking-wider uppercase">Client / Customer</p>
+                        <p id="previewClientName" class="font-semibold text-sm text-gray-900 mt-0.5">John Smith</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 tracking-wider uppercase">Job Site / Address</p>
+                        <p id="previewClientAddress" class="font-semibold text-sm text-gray-900 mt-0.5">12 High Street</p>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <div class="mb-6">
+                    <div class="grid grid-cols-12 text-[10px] font-bold text-gray-400 tracking-wider uppercase pb-2 border-b border-gray-100">
+                        <div class="col-span-8">Work Description</div>
+                        <div class="col-span-3 text-right">Amount (£)</div>
+                        <div class="col-span-1 text-right">Action</div>
+                    </div>
+                    <div id="itemsListContainer" class="divide-y divide-gray-50">
+                        <!-- Items rendered via JS -->
+                    </div>
+                    <button onclick="addItemRow()" class="mt-3 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition flex items-center space-x-1">+ Add Item</button>
+                </div>
+
+                <!-- Totals & Payment Bar -->
+                <div class="border-t border-gray-100 pt-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 tracking-wider uppercase mb-1">Payment Details</p>
+                        <p id="previewBankInfo" class="text-xs font-bold text-gray-800">20-40-60 | 87654321</p>
+                    </div>
+                    <div class="w-full md:w-64 space-y-2 text-right">
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>Subtotal:</span>
+                            <span id="subtotalVal">£0.00</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span id="taxLabel">VAT (20%):</span>
+                            <span id="taxVal">£0.00</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>Discount:</span>
+                            <span id="discountVal">-£0.00</span>
+                        </div>
+                        <div class="flex justify-between text-base font-extrabold text-gray-900 border-t border-gray-100 pt-2">
+                            <span>Total Due:</span>
+                            <span id="totalDueVal" class="text-indigo-600">£0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Action Buttons -->
+            <div class="grid grid-cols-3 gap-4 mt-6">
+                <button class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-2xl shadow-lg transition text-sm flex items-center justify-center space-x-2"><span>🖼️ Save Gallery</span></button>
+                <button class="bg-gray-800 hover:bg-gray-700 text-white font-medium py-3 rounded-2xl shadow-lg transition text-sm flex items-center justify-center space-x-2"><span>🖨️ Print PDF</span></button>
+                <button class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-2xl shadow-lg transition text-sm flex items-center justify-center space-x-2"><span>💬 WhatsApp</span></button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Script Logic -->
+    <script>
+        let items = [
+            { desc: "Food", amount: 8.00 },
+            { desc: "Fitted sockets", amount: 10.00 }
+        ];
+
+        function renderItems() {
+            const container = document.getElementById('itemsListContainer');
+            container.innerHTML = '';
+            
+            items.forEach((item, index) => {
+                container.innerHTML += `
+                    <div class="grid grid-cols-12 py-3 items-center text-sm">
+                        <div class="col-span-8 pr-4">
+                            <input type="text" value="${item.desc}" oninput="updateItemDesc(${index}, this.value)" class="w-full bg-transparent border-0 focus:ring-0 p-0 text-gray-800 font-medium">
+                        </div>
+                        <div class="col-span-3 text-right">
+                            <input type="number" value="${item.amount.toFixed(2)}" oninput="updateItemAmount(${index}, this.value)" class="w-full bg-transparent border-0 focus:ring-0 p-0 text-right text-gray-800 font-medium">
+                        </div>
+                        <div class="col-span-1 text-right">
+                            <button onclick="deleteItem(${index})" class="text-red-400 hover:text-red-600 text-xs font-bold px-1">✕</button>
+                        </div>
+                    </div>
+                `;
+            });
+            calculateTotals();
         }
-      });
 
-      // Fallback if no specific clauses matched but a price exists somewhere
-      if (parsed.length === 0) {
-        const fallbackPrice = text.match(/£\s*(\d+(?:\.\d+)?)/);
-        if (fallbackPrice) {
-          let amt = parseFloat(fallbackPrice[1]);
-          let cleanDesc = text.replace(/£\s*\d+(?:\.\d+)?/g, '').replace(/(for|at|on|spent|paid|I|client\s+is\s+[a-zA-Z\s]+)/gi, '').trim();
-          parsed.push({ desc: cleanDesc ? cleanDesc.charAt(0).toUpperCase() + cleanDesc.slice(1) : "General Service", amount: amt });
+        function updateItemDesc(index, val) { items[index].desc = val; }
+        function updateItemAmount(index, val) { 
+            items[index].amount = parseFloat(val) || 0; 
+            calculateTotals();
         }
-      }
+        function deleteItem(index) {
+            items.splice(index, 1);
+            renderItems();
+        }
+        function addItemRow() {
+            items.push({ desc: "New Item", amount: 0.00 });
+            renderItems();
+        }
 
-      if (parsed.length > 0) items = parsed;
-      updateSettings();
-      renderItems();
-    }
+        function updateSettings() {
+            document.getElementById('previewTradingName').innerText = document.getElementById('tradingNameInput').value;
+            document.getElementById('previewBankInfo').innerText = document.getElementById('bankInfoInput').value;
+            document.getElementById('previewClientName').innerText = document.getElementById('clientNameInput').value;
+            document.getElementById('previewClientAddress').innerText = document.getElementById('clientAddressInput').value;
+            
+            let taxRate = parseFloat(document.getElementById('taxRateInput').value) || 0;
+            document.getElementById('taxLabel').innerText = `VAT (${taxRate}%):`;
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            let subtotal = items.reduce((sum, item) => sum + item.amount, 0);
+            let taxRate = parseFloat(document.getElementById('taxRateInput').value) || 0;
+            let discount = parseFloat(document.getElementById('discountInput').value) || 0;
+            
+            let tax = subtotal * (taxRate / 100);
+            let total = (subtotal + tax) - discount;
+            if (total < 0) total = 0;
+
+            document.getElementById('subtotalVal').innerText = `£${subtotal.toFixed(2)}`;
+            document.getElementById('taxVal').innerText = `£${tax.toFixed(2)}`;
+            document.getElementById('discountVal').innerText = `-£${discount.toFixed(2)}`;
+            document.getElementById('totalDueVal').innerText = `£${total.toFixed(2)}`;
+        }
+
+        function parseTextDetails() {
+            let text = document.getElementById('jobInput').value.trim();
+            if (!text) return;
+            
+            // 1. Normalize spoken words like "8 pounds" or "8 lb" into "£8" automatically
+            text = text.replace(/(\d+(?:\.\d+)?)\s*(?:pounds|pound|lb|lbs)\b/gi, '£$1');
+            
+            // 2. Extract client name if specified (e.g., "client's name is Sophia" or "client is Sophia")
+            const clientMatch = text.match(/client(?:'s)?\s+(?:name\s+is\s+|is\s+)([a-zA-Z\s]+?)(?:\s+at|\s+for|\s+on|\.|$)/i);
+            if (clientMatch && clientMatch[1]) {
+                document.getElementById('clientNameInput').value = clientMatch[1].trim();
+            }
+            
+            // 3. Extract address if specified (e.g., "at 12 High Street")
+            const addressMatch = text.match(/at\s+(\d+[^.]+?)(?:\.|$)/i);
+            if (addressMatch && addressMatch[1]) {
+                document.getElementById('clientAddressInput').value = addressMatch[1].trim();
+            }
+            
+            // 4. Split multi-item sentences by "and" or commas so each clause is processed separately
+            let clauses = text.split(/\s+and\s+|,/gi);
+            let parsed = [];
+
+            clauses.forEach(clause => {
+                clause = clause.trim();
+                let priceRegex = /(?:I\s+)?(?:spent|paid|charged|bought)?\s*(.*?)\s+(?:for|at|on)?\s*£\s*(\d+(?:\.\d+)?)/i;
+                let match = clause.match(priceRegex);
+
+                if (match) {
+                    let desc = match[1].replace(/client(?:'s)?\s+(?:name\s+is\s+|is\s+)[a-zA-Z\s]+/gi, '').replace(/^(and|,|\.|\s)+/gi, '').trim();
+                    let amt = parseFloat(match[2]);
+
+                    if (!desc || desc.toLowerCase() === 'i' || desc.toLowerCase() === 'spent' || desc.toLowerCase() === 'paid' || desc.toLowerCase() === 'cost') {
+                        desc = "Expense / Item";
+                    }
+
+                    if (!isNaN(amt)) {
+                        parsed.push({ desc: desc.charAt(0).toUpperCase() + desc.slice(1), amount: amt });
+                    }
+                }
+            });
+
+            // Fallback if no specific clauses matched but a price exists somewhere
+            if (parsed.length === 0) {
+                const fallbackPrice = text.match(/£\s*(\d+(?:\.\d+)?)/);
+                if (fallbackPrice) {
+                    let amt = parseFloat(fallbackPrice[1]);
+                    let cleanDesc = text.replace(/£\s*\d+(?:\.\d+)?/g, '').replace(/(for|at|on|spent|paid|I|client(?:'s)?\s+(?:name\s+is\s+|is\s+)[a-zA-Z\s]+)/gi, '').trim();
+                    parsed.push({ desc: cleanDesc ? cleanDesc.charAt(0).toUpperCase() + cleanDesc.slice(1) : "General Service", amount: amt });
+                }
+            }
+
+            if (parsed.length > 0) items = parsed;
+            updateSettings();
+            renderItems();
+        }
+
+        let recognition;
+        let isRecording = false;
+
+        function toggleVoiceRecording() {
+            const btn = document.getElementById('recordBtn');
+            const input = document.getElementById('jobInput');
+
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert("Speech recognition is not supported in this browser. Try Chrome or Safari.");
+                return;
+            }
+
+            if (isRecording) {
+                if (recognition) recognition.stop();
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-GB';
+
+            recognition.onstart = function() {
+                isRecording = true;
+                btn.innerHTML = "<span>🛑 Listening...</span>";
+                btn.classList.remove('bg-red-600', 'hover:bg-red-500');
+                btn.classList.add('bg-amber-600', 'hover:bg-amber-500');
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                input.value = transcript;
+                parseTextDetails();
+            };
+
+            recognition.onerror = function() {
+                resetRecordButton();
+            };
+
+            recognition.onend = function() {
+                resetRecordButton();
+            };
+
+            recognition.start();
+        }
+
+        function resetRecordButton() {
+            isRecording = false;
+            const btn = document.getElementById('recordBtn');
+            btn.innerHTML = "<span>🎙️ Record Voice</span>";
+            btn.classList.remove('bg-amber-600', 'hover:bg-amber-500');
+            btn.classList.add('bg-red-600', 'hover:bg-red-500');
+        }
+
+        // Initialize view
+        renderItems();
+    </script>
+</body>
+</html>
