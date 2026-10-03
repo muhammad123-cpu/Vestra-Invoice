@@ -529,115 +529,135 @@
     function calculateTotals() {
       const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
       const discount = parseFloat(document.getElementById('discountVal').value) || 0;
-      const subtotal = items.reduce((acc, curr) => acc + curr.amount, 0);
-      const taxAmount = (subtotal * taxRate) / 100;
-      const total = (subtotal + taxAmount) - discount;
+      let subtotal = items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+      let tax = (subtotal * taxRate) / 100;
+      let total = subtotal + tax - discount;
+      if (total < 0) total = 0;
 
-      document.getElementById('invTaxRate').innerText = taxRate;
       document.getElementById('invSubtotal').innerText = '£' + subtotal.toFixed(2);
-      document.getElementById('invTax').innerText = '£' + taxAmount.toFixed(2);
+      document.getElementById('invTaxRate').innerText = taxRate;
+      document.getElementById('invTax').innerText = '£' + tax.toFixed(2);
       document.getElementById('invDiscount').innerText = '-£' + discount.toFixed(2);
-      document.getElementById('invTotal').innerText = '£' + (total > 0 ? total.toFixed(2) : '0.00');
+      document.getElementById('invTotal').innerText = '£' + total.toFixed(2);
     }
 
-    // Upgraded Smart Text Parser (Handles "spent £8 on food", "for", "at", etc.)
-    function parseTextDetails() {
-      const text = document.getElementById('jobInput').value.trim();
-      if (!text) return;
-      
-      const clientMatch = text.match(/client\s+is\s+([a-zA-Z\s]+?)(?:\s+at|\s+for|\s+on|\.|$)/i);
-      if (clientMatch && clientMatch[1]) document.getElementById('clientNameInput').value = clientMatch[1].trim();
-      const addressMatch = text.match(/at\s+(\d+[^.]+?)(?:\.|$)/i);
-      if (addressMatch && addressMatch[1]) document.getElementById('clientAddressInput').value = addressMatch[1].trim();
-      
-      const priceRegex = /(?:I\s+)?(?:spent|paid|charged|bought)?\s*(.*?)\s+(?:for|at|on)\s*£\s*(\d+(?:\.\d+)?)/gi;
-      let match, parsed = [];
-      while ((match = priceRegex.exec(text)) !== null) {
-        let desc = match[1].replace(/client\s+is\s+[a-zA-Z\s]+/gi, '').replace(/^(and|,|\.|\s)+/gi, '').trim();
-        let amt = parseFloat(match[2]);
-        
-        if (!desc || desc.toLowerCase() === 'i' || desc.toLowerCase() === 'spent' || desc.toLowerCase() === 'paid') {
-          desc = "Expense / Item";
-        }
-        
-        if (!isNaN(amt)) {
-          parsed.push({ desc: desc.charAt(0).toUpperCase() + desc.slice(1), amount: amt });
-        }
-      }
+    // WEB SPEECH API & VOICE PARSING ENGINE
+    let recognition = null;
+    let isRecording = false;
 
-      if (parsed.length === 0) {
-        const fallbackPrice = text.match(/£\s*(\d+(?:\.\d+)?)/);
-        if (fallbackPrice) {
-          let amt = parseFloat(fallbackPrice[1]);
-          let cleanDesc = text.replace(/£\s*\d+(?:\.\d+)?/g, '').replace(/(for|at|on|spent|paid|I)/gi, '').trim();
-          parsed.push({ desc: cleanDesc ? cleanDesc.charAt(0).toUpperCase() + cleanDesc.slice(1) : "General Service", amount: amt });
-        }
-      }
-
-      if (parsed.length > 0) items = parsed;
-      updateSettings();
-      renderItems();
-    }
-
-    let recognition = null, isRecording = false;
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
       recognition.lang = 'en-GB';
-      recognition.onresult = (e) => {
-        document.getElementById('jobInput').value = e.results[0][0].transcript;
-        parseTextDetails();
-        stopRecUI();
+
+      recognition.onstart = () => {
+        isRecording = true;
+        document.getElementById('micStatus').classList.remove('hidden');
+        document.getElementById('recordText').innerText = "Listening...";
+        document.getElementById('recordBtn').classList.add('ring-4', 'ring-red-400/50');
       };
-      recognition.onerror = () => stopRecUI();
-      recognition.onend = () => stopRecUI();
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        // Auto-fix common voice typos like "lb" instead of "£"
+        let cleaned = transcript.replace(/\b(lb|lbs|pound|pounds)\b/gi, '£');
+        document.getElementById('jobInput').value = cleaned;
+        parseTextDetails();
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        stopRecordUI();
+      };
+
+      recognition.onend = () => {
+        stopRecordUI();
+      };
     }
 
     function toggleRecord() {
-      if (!recognition) { alert("Speech recognition not supported in this browser."); return; }
-      if (!isRecording) {
-        isRecording = true;
-        document.getElementById('recordText').innerText = "Stop Recording";
-        document.getElementById('micStatus').classList.remove('hidden');
-        recognition.start();
-      } else {
+      if (!recognition) {
+        alert("Speech recognition is not supported in your browser. Please try Chrome or Safari, or type your description manually.");
+        return;
+      }
+      if (isRecording) {
         recognition.stop();
-        stopRecUI();
+      } else {
+        recognition.start();
       }
     }
 
-    function stopRecUI() {
+    function stopRecordUI() {
       isRecording = false;
-      document.getElementById('recordText').innerText = "Record Voice";
       document.getElementById('micStatus').classList.add('hidden');
+      document.getElementById('recordText').innerText = "Record Voice";
+      document.getElementById('recordBtn').classList.remove('ring-4', 'ring-red-400/50');
     }
 
-    // Save Invoice as PNG Image directly to Device Gallery / Downloads
+    function parseTextDetails() {
+      let rawText = document.getElementById('jobInput').value.trim();
+      if (!rawText) return;
+
+      // Extract client name if phrases like "client is [Name]" or "for [Name]" appear
+      let clientMatch = rawText.match(/(?:client(?:'s)? name is|client is|for client)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
+      if (clientMatch && clientMatch[1]) {
+        let foundClient = clientMatch[1];
+        document.getElementById('clientNameInput').value = foundClient;
+        document.getElementById('invClient').innerText = foundClient;
+        // Remove client part from text so it doesn't pollute line items
+        rawText = rawText.replace(clientMatch[0], '');
+      }
+
+      // Split multi-item sentences separated by "and", "plus", or commas
+      let parts = rawText.split(/\s+(?:and|plus|,)\s+/i);
+      let newItems = [];
+
+      parts.forEach(part => {
+        part = part.trim();
+        if (!part) return;
+        // Look for numbers or currency symbols
+        let amtMatch = part.match(/(?:[£$€]|cost(?:s)?\s*(?:£|\$|€)?)\s*(\d+(?:\.\d{2})?)/i) || part.match(/(\d+(?:\.\d{2})?)\s*(?:pounds|quid|£)/i);
+        let amount = amtMatch ? parseFloat(amtMatch[1]) : 50.00; // Default fallback if no price spoken
+        newItems.push({ desc: part, amount: amount });
+      });
+
+      if (newItems.length > 0) {
+        items = newItems;
+        renderItems();
+      }
+    }
+
+    // Checkout / Stripe simulation stub
+    function checkout(planName, limit) {
+      localStorage.setItem('vestra_sub_active', 'true');
+      localStorage.setItem('vestra_plan_limit', limit);
+      alert(`Success! Subscribed to ${planName}. Your workspace is unlocked.`);
+      checkAccessState();
+    }
+
+    // Save invoice to gallery using html2canvas
     function saveToGallery() {
       const sheet = document.getElementById('invoiceSheet');
       html2canvas(sheet, { scale: 2 }).then(canvas => {
         const link = document.createElement('a');
-        link.download = `Vestra-Invoice-${Date.now()}.png`;
+        link.download = 'Vestra-Invoice.png';
         link.href = canvas.toDataURL('image/png');
+        link.link = true;
         link.click();
-      }).catch(err => {
-        alert("Could not save image. Try using Print / PDF instead.");
       });
     }
 
+    // WhatsApp quick share
     function sendWhatsApp() {
-      const client = document.getElementById('invClient').innerText;
+      const clientName = document.getElementById('clientNameInput').value;
       const total = document.getElementById('invTotal').innerText;
-      window.open(`https://wa.me/?text=` + encodeURIComponent(`Hi ${client}, here is your invoice from Vestra Trade Services for ${total}.`), '_blank');
+      const text = encodeURIComponent(`Hi ${clientName}, here is your invoice total of ${total} from Vestra Trade Services. Thank you for your business!`);
+      window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
     }
 
-    function checkout(plan, limit) {
-      localStorage.setItem('vestra_plan_limit', limit);
-      if (plan === '1 Day Pass') window.location.href = "https://buy.stripe.com/test_5kQaEX8Bn2dK5QC7DG08g03";
-      else if (plan === 'Standard Plan') window.location.href = "https://buy.stripe.com/test_dRmfZhaJvaKgdj46zC08g04";
-      else window.location.href = "https://buy.stripe.com/test_3cI14n5pb4lSgvg5vy08g05";
-    }
-
+    // Initial render
     renderItems();
     updateSettings();
   </script>
