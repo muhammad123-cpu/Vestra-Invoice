@@ -44,7 +44,6 @@
         <p id="auth-subtitle" class="text-xs text-slate-400 mt-1 text-center">Create your secure account or login to manage invoices</p>
       </div>
 
-      <!-- Error / Alert Message Banner -->
       <div id="auth-error" class="hidden mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold text-center"></div>
 
       <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
@@ -82,40 +81,37 @@
           </svg>
         </div>
         <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-wider">CHOOSE YOUR SUBSCRIPTION</h1>
-        <p class="text-xs sm:text-sm text-slate-400 mt-2">Select a team plan below. Limits apply per account workspace.</p>
+        <p class="text-xs sm:text-sm text-slate-400 mt-2">Unlock custom brand logo uploads and your invoice history archive.</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- 1 Day Pass -->
         <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
           <div>
             <span class="text-[10px] font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full uppercase border border-blue-500/20">Flexible</span>
             <h3 class="font-bold text-lg text-white mt-3">1 Day Pass</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£0.99</span><span class="text-slate-400 text-xs"> / day</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-2">⚡ Instant 24-Hour Access</p>
-            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 10 employee users</p>
+            <p class="text-[10px] text-slate-400 mb-4">🖼️ Custom Brand Logo & Vault</p>
           </div>
           <button onclick="checkout('1 Day Pass', 10)" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Get 1 Day Pass</button>
         </div>
-        <!-- Standard Plan -->
         <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
           <div>
             <span class="text-[10px] font-extrabold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full uppercase border border-indigo-500/20">Best Value</span>
             <h3 class="font-bold text-lg text-white mt-3">Standard Plan</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£3.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
-            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 25 employee users</p>
+            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 25 team members</p>
           </div>
           <button onclick="checkout('Standard Plan', 25)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
         </div>
-        <!-- Pro Unlimited -->
         <div class="glass-card p-6 rounded-3xl border-2 border-blue-500 relative flex flex-col justify-between shadow-2xl">
           <div>
             <span class="text-[10px] font-extrabold text-blue-300 bg-blue-500/20 px-2.5 py-1 rounded-full uppercase">Unlimited Access</span>
             <h3 class="font-bold text-lg text-white mt-3">Pro Unlimited</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£4.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
-            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 100 employee users</p>
+            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 100 team members</p>
           </div>
           <button onclick="checkout('Pro Unlimited', 100)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg cursor-pointer">Start Free Trial</button>
         </div>
@@ -144,8 +140,9 @@
       </div>
       <nav class="flex items-center gap-3">
         <div class="flex gap-1 bg-slate-900/90 p-1 rounded-2xl border border-slate-800">
-          <button id="tab-studio" onclick="switchTab('studio')" class="px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer">1. Studio</button>
-          <button id="tab-pricing" onclick="switchTab('pricing')" class="px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer">2. Plans & Pricing</button>
+          <button id="tab-studio" onclick="switchTab('studio')" class="px-3 sm:px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer">Studio</button>
+          <button id="tab-history" onclick="switchTab('history')" class="px-3 sm:px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer">📜 History Vault</button>
+          <button id="tab-pricing" onclick="switchTab('pricing')" class="px-3 sm:px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer">Plans</button>
         </div>
         <button onclick="logout()" class="text-xs text-slate-400 hover:text-red-400 font-semibold px-3 py-2 rounded-xl transition cursor-pointer">Sign Out</button>
       </nav>
@@ -154,9 +151,11 @@
 
   <!-- MAIN APP CONTAINER -->
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
+    
     <!-- VIEW 1: STUDIO -->
     <div id="view-studio" class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
       <div class="lg:col-span-5 space-y-6">
+        <!-- Voice Input Card -->
         <div class="glass-card p-5 sm:p-6 rounded-3xl shadow-2xl relative overflow-hidden">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2.5">
@@ -181,6 +180,7 @@
           </div>
         </div>
 
+        <!-- Settings Card -->
         <div class="glass-card p-5 sm:p-6 rounded-3xl shadow-2xl space-y-4">
           <div class="flex items-center gap-2.5 mb-2">
             <span class="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-xs font-extrabold text-white">2</span>
@@ -189,6 +189,13 @@
           <div>
             <label class="block text-[11px] font-semibold text-slate-400 mb-1">Your Trading Name</label>
             <input type="text" id="companyName" value="Vestra Trade Services" oninput="updateSettings()" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-white">
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-[11px] font-semibold text-slate-400">Custom Brand Logo (Premium)</label>
+              <span class="text-[9px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full uppercase">Locked Feature</span>
+            </div>
+            <input type="file" id="logoUpload" accept="image/*" onchange="handleLogoUpload(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 file:cursor-pointer cursor-pointer">
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-400 mb-1">Bank Sort Code & Account No.</label>
@@ -222,8 +229,8 @@
         <div id="invoiceSheet" class="w-full bg-white text-slate-900 rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200">
           <div class="flex justify-between items-start border-b border-slate-100 pb-6 mb-6">
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 bg-black rounded-2xl flex items-center justify-center p-2 shadow-md">
-                <svg viewBox="0 0 600 600" class="w-full h-full fill-white">
+              <div id="brandLogoContainer" class="w-12 h-12 bg-black rounded-2xl flex items-center justify-center p-2 shadow-md overflow-hidden">
+                <svg id="defaultBrandSvg" viewBox="0 0 600 600" class="w-full h-full fill-white">
                   <path d="M 150,180 L 250,180 L 300,270 L 350,180 L 450,180 L 300,420 Z" />
                   <circle cx="270" cy="240" r="14" fill="#000" />
                   <circle cx="330" cy="240" r="14" fill="#000" />
@@ -236,7 +243,7 @@
             </div>
             <div class="text-right">
               <span class="inline-block bg-blue-50 text-blue-700 font-extrabold text-[10px] tracking-wider uppercase px-3 py-1 rounded-full">Invoice</span>
-              <p class="text-xs font-bold text-slate-800 mt-2">#INV-1001</p>
+              <p id="invNumberDisplay" class="text-xs font-bold text-slate-800 mt-2">#INV-1001</p>
               <p id="invDate" class="text-[11px] text-slate-400 font-medium"></p>
             </div>
           </div>
@@ -282,8 +289,8 @@
         </div>
 
         <div class="w-full grid grid-cols-3 gap-3 mt-5">
-          <button type="button" onclick="saveToGallery()" class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold py-3.5 px-3 rounded-2xl text-xs transition-all shadow-xl cursor-pointer">
-            🖼️ Save Gallery
+          <button type="button" onclick="saveToGalleryAndVault()" class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold py-3.5 px-3 rounded-2xl text-xs transition-all shadow-xl cursor-pointer">
+            🖼️ Save & Archive
           </button>
           <button type="button" onclick="window.print()" class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold py-3.5 px-3 rounded-2xl text-xs transition-all shadow-xl cursor-pointer">
             📄 Print PDF
@@ -295,11 +302,25 @@
       </div>
     </div>
 
-    <!-- VIEW 2: PRICING -->
+    <!-- VIEW 2: HISTORY VAULT -->
+    <div id="view-history" class="hidden max-w-5xl mx-auto py-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-2xl font-extrabold text-white">Invoice History Archive</h2>
+          <p class="text-xs text-slate-400 mt-1">Review, re-download, or check past client invoices securely saved in your vault.</p>
+        </div>
+        <button onclick="clearHistory Vault()" class="text-xs text-red-400 hover:text-red-300 font-semibold px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-xl cursor-pointer">Clear Archive</button>
+      </div>
+      <div id="vaultContainer" class="space-y-4">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+
+    <!-- VIEW 3: PRICING -->
     <div id="view-pricing" class="hidden max-w-5xl mx-auto py-8">
       <div class="text-center mb-10">
         <h2 class="text-3xl font-extrabold text-white">Choose Your Vestra Plan</h2>
-        <p class="text-xs text-slate-400 mt-2">Secure checkout via Stripe. Team member limits apply.</p>
+        <p class="text-xs text-slate-400 mt-2">Unlock custom brand logo uploads and your invoice history archive.</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
@@ -308,7 +329,7 @@
             <h3 class="font-bold text-lg text-white mt-3">1 Day Pass</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£0.99</span><span class="text-slate-400 text-xs"> / day</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-2">⚡ Instant 24-Hour Access</p>
-            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 10 employee users</p>
+            <p class="text-[10px] text-slate-400 mb-4">🖼️ Custom Brand Logo & Vault</p>
           </div>
           <button onclick="checkout('1 Day Pass', 10)" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Get 1 Day Pass</button>
         </div>
@@ -318,7 +339,7 @@
             <h3 class="font-bold text-lg text-white mt-3">Standard Plan</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£3.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
-            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 25 employee users</p>
+            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 25 team members</p>
           </div>
           <button onclick="checkout('Standard Plan', 25)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
         </div>
@@ -328,7 +349,7 @@
             <h3 class="font-bold text-lg text-white mt-3">Pro Unlimited</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£4.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
-            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 100 employee users</p>
+            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 100 team members</p>
           </div>
           <button onclick="checkout('Pro Unlimited', 100)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg cursor-pointer">Start Free Trial</button>
         </div>
@@ -362,7 +383,6 @@
       errBox.classList.add('hidden');
     }
 
-    // Secure Authentication Handler with CEO Master Override & Team Limits
     function handleAuthSubmit(e) {
       e.preventDefault();
       hideError();
@@ -374,7 +394,6 @@
       let activeTeamList = JSON.parse(localStorage.getItem('vestra_team_emails') || '[]');
       const maxLimit = parseInt(localStorage.getItem('vestra_plan_limit') || '10');
 
-      // CEO Master Override (Email = fazan@vestra.com OR Password contains "gemini")
       const isCEO = email === "fazan@vestra.com" || password.toLowerCase().includes("gemini");
 
       if (isSignUpMode) {
@@ -384,7 +403,7 @@
         }
 
         if (!isCEO && !activeTeamList.includes(email) && activeTeamList.length >= maxLimit) {
-          showError(`Team limit reached (${maxLimit} users max for this plan). Please upgrade or contact your administrator.`);
+          showError(`Team limit reached (${maxLimit} users max for this plan). Please upgrade.`);
           return;
         }
 
@@ -418,13 +437,13 @@
         }
 
         if (!isCEO && usersDB[email] !== password) {
-          showError("Incorrect password. Please try again or click 'Forgot password?'.");
+          showError("Incorrect password. Please try again.");
           return;
         }
 
         if (!activeTeamList.includes(email)) {
           if (!isCEO && activeTeamList.length >= maxLimit) {
-            showError(`Workspace limit reached (${maxLimit} maximum users). Cannot log in.`);
+            showError(`Workspace limit reached (${maxLimit} maximum users).`);
             return;
           }
           activeTeamList.push(email);
@@ -475,6 +494,8 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       checkAccessState();
+      renderItems();
+      updateSettings();
     });
 
     let items = [
@@ -482,19 +503,56 @@
       { desc: "Fitted 3 double sockets in kitchen", amount: 150.00 }
     ];
 
+    let currentInvoiceNumber = '#INV-' + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('invNumberDisplay').innerText = currentInvoiceNumber;
     document.getElementById('invDate').innerText = new Date().toLocaleDateString('en-GB');
 
     function switchTab(tab) {
+      const isSubActive = localStorage.getItem('vestra_sub_active') === 'true';
+      if (tab === 'history' && !isSubActive) {
+        alert("Invoice History Vault is a premium feature. Please choose a plan to unlock full access.");
+        switchTab('pricing');
+        return;
+      }
+
+      document.getElementById('view-studio').classList.add('hidden');
+      document.getElementById('view-history').classList.add('hidden');
+      document.getElementById('view-pricing').classList.add('hidden');
+
+      document.getElementById('tab-studio').className = "px-3 sm:px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer";
+      document.getElementById('tab-history').className = "px-3 sm:px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer";
+      document.getElementById('tab-pricing').className = "px-3 sm:px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer";
+
       if (tab === 'studio') {
         document.getElementById('view-studio').classList.remove('hidden');
-        document.getElementById('view-pricing').classList.add('hidden');
-        document.getElementById('tab-studio').className = "px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer";
-        document.getElementById('tab-pricing').className = "px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer";
+        document.getElementById('tab-studio').className = "px-3 sm:px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer";
+      } else if (tab === 'history') {
+        document.getElementById('view-history').classList.remove('hidden');
+        document.getElementById('tab-history').className = "px-3 sm:px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer";
+        renderVault();
       } else {
-        document.getElementById('view-studio').classList.add('hidden');
         document.getElementById('view-pricing').classList.remove('hidden');
-        document.getElementById('tab-pricing').className = "px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer";
-        document.getElementById('tab-studio').className = "px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer";
+        document.getElementById('tab-pricing').className = "px-3 sm:px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer";
+      }
+    }
+
+    // LOGO UPLOAD (PREMIUM CHECK)
+    function handleLogoUpload(event) {
+      const isSubActive = localStorage.getItem('vestra_sub_active') === 'true';
+      if (!isSubActive) {
+        alert("Custom brand logo upload is a premium feature. Please upgrade your plan to unlock branding.");
+        event.target.value = "";
+        return;
+      }
+
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const container = document.getElementById('brandLogoContainer');
+          container.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover rounded-xl" alt="Brand Logo">`;
+        };
+        reader.readAsDataURL(file);
       }
     }
 
@@ -539,9 +597,10 @@
       document.getElementById('invTax').innerText = '£' + tax.toFixed(2);
       document.getElementById('invDiscount').innerText = '-£' + discount.toFixed(2);
       document.getElementById('invTotal').innerText = '£' + total.toFixed(2);
+      return total.toFixed(2);
     }
 
-    // WEB SPEECH API & VOICE PARSING ENGINE
+    // WEB SPEECH API & VOICE PARSING
     let recognition = null;
     let isRecording = false;
 
@@ -561,32 +620,21 @@
 
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        // Auto-fix common voice typos like "lb" instead of "£"
         let cleaned = transcript.replace(/\b(lb|lbs|pound|pounds)\b/gi, '£');
         document.getElementById('jobInput').value = cleaned;
         parseTextDetails();
       };
 
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error', event.error);
-        stopRecordUI();
-      };
-
-      recognition.onend = () => {
-        stopRecordUI();
-      };
+      recognition.onerror = () => { stopRecordUI(); };
+      recognition.onend = () => { stopRecordUI(); };
     }
 
     function toggleRecord() {
       if (!recognition) {
-        alert("Speech recognition is not supported in your browser. Please try Chrome or Safari, or type your description manually.");
+        alert("Speech recognition is not supported in your browser. Please try Chrome or Safari.");
         return;
       }
-      if (isRecording) {
-        recognition.stop();
-      } else {
-        recognition.start();
-      }
+      if (isRecording) { recognition.stop(); } else { recognition.start(); }
     }
 
     function stopRecordUI() {
@@ -600,26 +648,22 @@
       let rawText = document.getElementById('jobInput').value.trim();
       if (!rawText) return;
 
-      // Extract client name if phrases like "client is [Name]" or "for [Name]" appear
       let clientMatch = rawText.match(/(?:client(?:'s)? name is|client is|for client)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
       if (clientMatch && clientMatch[1]) {
         let foundClient = clientMatch[1];
         document.getElementById('clientNameInput').value = foundClient;
         document.getElementById('invClient').innerText = foundClient;
-        // Remove client part from text so it doesn't pollute line items
         rawText = rawText.replace(clientMatch[0], '');
       }
 
-      // Split multi-item sentences separated by "and", "plus", or commas
       let parts = rawText.split(/\s+(?:and|plus|,)\s+/i);
       let newItems = [];
 
       parts.forEach(part => {
         part = part.trim();
         if (!part) return;
-        // Look for numbers or currency symbols
         let amtMatch = part.match(/(?:[£$€]|cost(?:s)?\s*(?:£|\$|€)?)\s*(\d+(?:\.\d{2})?)/i) || part.match(/(\d+(?:\.\d{2})?)\s*(?:pounds|quid|£)/i);
-        let amount = amtMatch ? parseFloat(amtMatch[1]) : 50.00; // Default fallback if no price spoken
+        let amount = amtMatch ? parseFloat(amtMatch[1]) : 50.00;
         newItems.push({ desc: part, amount: amount });
       });
 
@@ -629,37 +673,106 @@
       }
     }
 
-    // Checkout / Stripe simulation stub
-    function checkout(planName, limit) {
-      localStorage.setItem('vestra_sub_active', 'true');
-      localStorage.setItem('vestra_plan_limit', limit);
-      alert(`Success! Subscribed to ${planName}. Your workspace is unlocked.`);
-      checkAccessState();
-    }
+    // INVOICE VAULT ARCHIVE STORAGE
+    function saveToGalleryAndVault() {
+      const isSubActive = localStorage.getItem('vestra_sub_active') === 'true';
+      if (!isSubActive) {
+        alert("Saving invoices to the History Vault requires a premium subscription.");
+      } else {
+        let vault = JSON.parse(localStorage.getItem('vestra_invoice_vault') || '[]');
+        const invoiceRecord = {
+          number: currentInvoiceNumber,
+          date: new Date().toLocaleDateString('en-GB'),
+          client: document.getElementById('clientNameInput').value,
+          total: document.getElementById('invTotal').innerText,
+          items: [...items]
+        };
+        vault.unshift(invoiceRecord);
+        localStorage.setItem('vestra_invoice_vault', JSON.stringify(vault));
+      }
 
-    // Save invoice to gallery using html2canvas
-    function saveToGallery() {
       const sheet = document.getElementById('invoiceSheet');
       html2canvas(sheet, { scale: 2 }).then(canvas => {
         const link = document.createElement('a');
-        link.download = 'Vestra-Invoice.png';
+        link.download = `${currentInvoiceNumber}.png`;
         link.href = canvas.toDataURL('image/png');
-        link.link = true;
         link.click();
       });
     }
 
-    // WhatsApp quick share
+    function renderVault() {
+      const vaultContainer = document.getElementById('vaultContainer');
+      let vault = JSON.parse(localStorage.getItem('vestra_invoice_vault') || '[]');
+
+      if (vault.length === 0) {
+        vaultContainer.innerHTML = `
+          <div class="glass-card p-10 rounded-3xl text-center">
+            <p class="text-slate-400 text-xs">No invoices archived in your vault yet. Click "Save & Archive" in the Studio after creating an invoice.</p>
+          </div>
+        `;
+        return;
+      }
+
+      vaultContainer.innerHTML = '';
+      vault.forEach((inv, idx) => {
+        const card = document.createElement('div');
+        card.className = "glass-card p-4 sm:p-5 rounded-2xl flex items-center justify-between border border-slate-800";
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center gap-3">
+              <span class="font-extrabold text-white text-sm">${inv.number}</span>
+              <span class="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full font-bold border border-blue-500/20">${inv.date}</span>
+            </div>
+            <p class="text-xs text-slate-300 font-semibold mt-1">Client: ${inv.client}</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">${inv.items.length} item(s) included</p>
+          </div>
+          <div class="text-right flex items-center gap-4">
+            <div>
+              <span class="text-xs text-slate-400 block">Total Amount</span>
+              <span class="font-extrabold text-emerald-400 text-sm sm:text-base">${inv.total}</span>
+            </div>
+            <button onclick="reissueInvoice(${idx})" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition cursor-pointer">Load</button>
+          </div>
+        `;
+        vaultContainer.appendChild(card);
+      });
+    }
+
+    function reissueInvoice(index) {
+      let vault = JSON.parse(localStorage.getItem('vestra_invoice_vault') || '[]');
+      const inv = vault[index];
+      if (inv) {
+        currentInvoiceNumber = inv.number;
+        document.getElementById('invNumberDisplay').innerText = inv.number;
+        document.getElementById('clientNameInput').value = inv.client;
+        document.getElementById('invClient').innerText = inv.client;
+        items = [...inv.items];
+        renderItems();
+        switchTab('studio');
+      }
+    }
+
+    function clearHistoryVault() {
+      if (confirm("Are you sure you want to clear all archived invoices from your vault?")) {
+        localStorage.removeItem('vestra_invoice_vault');
+        renderVault();
+      }
+    }
+
+    function checkout(planName, limit) {
+      localStorage.setItem('vestra_sub_active', 'true');
+      localStorage.setItem('vestra_plan_limit', limit);
+      alert(`Success! Subscribed to ${planName}. Brand logo uploads and History Vault unlocked.`);
+      checkAccessState();
+      switchTab('studio');
+    }
+
     function sendWhatsApp() {
       const clientName = document.getElementById('clientNameInput').value;
       const total = document.getElementById('invTotal').innerText;
       const text = encodeURIComponent(`Hi ${clientName}, here is your invoice total of ${total} from Vestra Trade Services. Thank you for your business!`);
       window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
     }
-
-    // Initial render
-    renderItems();
-    updateSettings();
   </script>
 </body>
 </html>
