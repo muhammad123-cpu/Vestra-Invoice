@@ -1,716 +1,603 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vestra - Voice Invoicing Engine</title>
+  <title>Vestra Invoice Studio | Professional Suite</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Include html2canvas for saving invoices to gallery/downloads -->
+  <!-- html2canvas for image generation & downloads -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
-    .glass-card { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .glass-input { background: rgba(2, 6, 23, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); }
-    .glass-input:focus { border-color: #3b82f6; outline: none; }
-    @keyframes pulse-ring {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.08); opacity: 0.4; }
-      100% { transform: scale(0.95); opacity: 0.8; }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .pulse-rec { animation: pulse-ring 1.5s infinite ease-in-out; }
-    @media print {
-      body * { visibility: hidden; }
-      #invoiceSheet, #invoiceSheet * { visibility: visible; }
-      #invoiceSheet { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; }
-      .print\:hidden { display: none !important; }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.5);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(59, 130, 246, 0.5);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(59, 130, 246, 0.8);
     }
   </style>
 </head>
-<body class="bg-[#050811] text-slate-100 min-h-screen flex flex-col selection:bg-blue-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-blue-500 selection:text-white custom-scrollbar">
 
-  <!-- STEP 1: AUTHENTICATION SCREEN -->
-  <div id="auth-screen" class="fixed inset-0 z-50 bg-[#050811] flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-slate-800">
-      <div class="flex flex-col items-center mb-6">
-        <div class="w-12 h-12 bg-black rounded-2xl flex items-center justify-center p-2 border border-slate-800 shadow-lg ring-1 ring-white/10 mb-3">
-          <svg viewBox="0 0 600 600" class="w-full h-full fill-white">
-            <path d="M 150,180 L 250,180 L 300,270 L 350,180 L 450,180 L 300,420 Z" />
-            <circle cx="270" cy="240" r="14" fill="#000" />
-            <circle cx="330" cy="240" r="14" fill="#000" />
-          </svg>
+  <!-- Top Navigation Bar -->
+  <header class="w-full border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl sticky top-0 z-50 shadow-2xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-500 flex items-center justify-center font-extrabold text-white shadow-xl shadow-blue-500/30 text-lg">V</div>
+        <div>
+          <span class="font-extrabold text-base tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent block">Vestra Invoice Studio</span>
+          <span class="text-[10px] text-blue-400 font-bold uppercase tracking-wider">Enterprise & Trade Edition</span>
         </div>
-        <h2 id="auth-title" class="text-lg font-extrabold text-white tracking-wider">Welcome to Vestra</h2>
-        <p id="auth-subtitle" class="text-xs text-slate-400 mt-1 text-center">Create your secure account or login to manage invoices</p>
       </div>
-
-      <div id="auth-error" class="hidden mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold text-center"></div>
-
-      <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-300 mb-1.5">Email Address</label>
-          <input type="email" id="auth-email" required placeholder="tradesperson@example.com" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500">
-        </div>
-        <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="block text-[11px] font-semibold text-slate-300">Password</label>
-            <a href="#" onclick="alert('Password reset instructions sent to your registered email.')" class="text-[10px] text-blue-400 hover:underline">Forgot password?</a>
-          </div>
-          <input type="password" id="auth-password" required placeholder="••••••••" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500">
-        </div>
-        <button type="submit" id="auth-submit-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-lg active:scale-95 cursor-pointer">
-          Sign Up
+      
+      <!-- Interactive Navigation Tabs -->
+      <div class="flex items-center gap-1.5 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800/80 shadow-inner">
+        <button id="tab-studio" onclick="switchTab('studio')" class="px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-600/30 transition-all cursor-pointer flex items-center gap-2">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          Studio
         </button>
-      </form>
-      <div class="text-center mt-5 text-xs text-slate-400">
-        <span id="auth-switch-text">Already have an account?</span> 
-        <a href="#" onclick="toggleAuthMode(event)" id="auth-switch-link" class="text-blue-400 font-semibold hover:underline ml-1">Log in</a>
+        <button id="tab-history" onclick="switchTab('history')" class="px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-2">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+          History Vault
+        </button>
+        <button id="tab-pricing" onclick="switchTab('pricing')" class="px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-2">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+          Pricing Plans
+        </button>
       </div>
-    </div>
-  </div>
-
-  <!-- STEP 2: SUBSCRIPTION PAYWALL -->
-  <div id="paywall-screen" class="hidden fixed inset-0 z-50 bg-[#050811] flex items-center justify-center p-4 overflow-y-auto">
-    <div class="max-w-4xl w-full py-10">
-      <div class="text-center mb-8">
-        <div class="w-14 h-14 bg-black rounded-2xl flex items-center justify-center p-2.5 mx-auto border border-slate-800 shadow-xl ring-1 ring-white/10 mb-3">
-          <svg viewBox="0 0 600 600" class="w-full h-full fill-white">
-            <path d="M 150,180 L 250,180 L 300,270 L 350,180 L 450,180 L 300,420 Z" />
-            <circle cx="270" cy="240" r="14" fill="#000" />
-            <circle cx="330" cy="240" r="14" fill="#000" />
-          </svg>
-        </div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-wider">CHOOSE YOUR SUBSCRIPTION</h1>
-        <p class="text-xs sm:text-sm text-slate-400 mt-2">Upgrade to Pro Unlimited to unlock custom brand logo uploads.</p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
-          <div>
-            <span class="text-[10px] font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full uppercase border border-blue-500/20">Flexible</span>
-            <h3 class="font-bold text-lg text-white mt-3">1 Day Pass</h3>
-            <div class="my-3"><span class="text-3xl font-extrabold text-white">£0.99</span><span class="text-slate-400 text-xs"> / day</span></div>
-            <p class="text-[11px] text-emerald-400 font-semibold mb-2">⚡ Instant 24-Hour Access</p>
-            <p class="text-[10px] text-slate-300 mb-4">👥 Share account with up to <b>10 team members</b>, write unlimited invoices & use AI voice typing</p>
-          </div>
-          <button onclick="checkout('1 Day Pass', 'day_pass', 10, true)" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Get 1 Day Pass</button>
-        </div>
-        <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
-          <div>
-            <span class="text-[10px] font-extrabold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full uppercase border border-indigo-500/20">Best Value</span>
-            <h3 class="font-bold text-lg text-white mt-3">Standard Plan</h3>
-            <div class="my-3"><span class="text-3xl font-extrabold text-white">£3.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
-            <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
-            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 25 team members with full invoice history vault</p>
-          </div>
-          <button onclick="checkout('Standard Plan', 'standard', 25, true)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
-        </div>
-        <div class="glass-card p-6 rounded-3xl border-2 border-blue-500 relative flex flex-col justify-between shadow-2xl">
-          <div>
-            <span class="text-[10px] font-extrabold text-blue-300 bg-blue-500/20 px-2.5 py-1 rounded-full uppercase">Unlimited Access</span>
-            <h3 class="font-bold text-lg text-white mt-3">Pro Unlimited</h3>
-            <div class="my-3"><span class="text-3xl font-extrabold text-white">£4.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
-            <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
-            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 100 team members & <b>Custom Logo Uploads</b></p>
-          </div>
-          <button onclick="checkout('Pro Unlimited', 'pro_unlimited', 100, true)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg cursor-pointer">Start Free Trial</button>
-        </div>
-      </div>
-      <div class="text-center mt-6">
-        <button onclick="logout()" class="text-xs text-slate-400 hover:text-white underline cursor-pointer">Sign out or switch account</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- TOP APP NAVBAR -->
-  <header class="border-b border-slate-800/80 bg-[#070C18]/90 sticky top-0 z-40 backdrop-blur-xl">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-black rounded-xl flex items-center justify-center p-1.5 border border-slate-800 shadow-lg ring-1 ring-white/10">
-          <svg viewBox="0 0 600 600" class="w-full h-full fill-white">
-            <path d="M 150,180 L 250,180 L 300,270 L 350,180 L 450,180 L 300,420 Z" />
-            <circle cx="270" cy="240" r="14" fill="#000" />
-            <circle cx="330" cy="240" r="14" fill="#000" />
-          </svg>
-        </div>
-        <div>
-          <span class="text-lg font-extrabold tracking-wider text-white">VESTRA</span>
-          <p class="text-[9px] text-blue-400 font-bold tracking-widest uppercase">Voice Invoicing Engine</p>
-        </div>
-      </div>
-      <nav class="flex items-center gap-3">
-        <div class="flex gap-1 bg-slate-900/90 p-1 rounded-2xl border border-slate-800">
-          <button id="tab-studio" onclick="switchTab('studio')" class="px-3 sm:px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer">Studio</button>
-          <button id="tab-history" onclick="switchTab('history')" class="px-3 sm:px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer">📜 History Vault</button>
-          <button id="tab-pricing" onclick="switchTab('pricing')" class="px-3 sm:px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer">Plans</button>
-        </div>
-        <button onclick="logout()" class="text-xs text-slate-400 hover:text-red-400 font-semibold px-3 py-2 rounded-xl transition cursor-pointer">Sign Out</button>
-      </nav>
     </div>
   </header>
 
-  <!-- MAIN APP CONTAINER -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
-    
-    <!-- VIEW 1: STUDIO -->
-    <div id="view-studio" class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
+  <!-- Main View Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
+
+    <!-- STUDIO VIEW -->
+    <div id="view-studio" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- Left Controls Panel (5 Columns) -->
       <div class="lg:col-span-5 space-y-6">
-        <!-- Voice Input Card -->
-        <div class="glass-card p-5 sm:p-6 rounded-3xl shadow-2xl relative overflow-hidden">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2.5">
-              <span class="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-xs font-extrabold text-white">1</span>
-              <h2 class="font-bold text-sm sm:text-base text-white">Record or Type Details</h2>
-            </div>
-            <span class="text-[10px] bg-blue-500/10 text-blue-400 font-bold px-2.5 py-1 rounded-full border border-blue-500/20">Voice AI</span>
+        
+        <!-- Voice Assistant Card -->
+        <div class="glass-card p-6 rounded-3xl shadow-2xl space-y-4 border border-slate-800/80">
+          <div class="flex items-center justify-between">
+            <h2 class="font-bold text-sm tracking-wide text-white flex items-center gap-2">
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+              Smart Voice & Description Parser
+            </h2>
+            <span class="text-[10px] bg-blue-500/10 text-blue-400 font-extrabold px-3 py-1 rounded-full border border-blue-500/20">AI Active</span>
           </div>
-          <textarea id="jobInput" rows="4" class="w-full glass-input rounded-2xl p-3.5 text-xs text-slate-200 focus:outline-none transition resize-none leading-relaxed" placeholder="Tap Record Voice or type e.g. I spent £8 on food and fitted sockets for £150. Client is John Smith at 12 High Street."></textarea>
-          <div id="micStatus" class="hidden text-[11px] font-semibold text-red-400 flex items-center gap-2 mt-2">
-            <span class="w-2.5 h-2.5 bg-red-500 rounded-full pulse-rec"></span>
-            Listening... Speak now!
-          </div>
-          <div class="grid grid-cols-2 gap-3 mt-4">
-            <button type="button" onclick="toggleRecord()" id="recordBtn" class="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 active:scale-95 text-white font-bold py-3 px-4 rounded-2xl text-xs transition-all shadow-lg shadow-red-900/30 cursor-pointer">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-              <span id="recordText">Record Voice</span>
-            </button>
-            <button type="button" onclick="parseTextDetails()" class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold py-3 px-4 rounded-2xl text-xs transition-all shadow-lg shadow-blue-900/30 cursor-pointer">
-              ⚡ Build Invoice
-            </button>
-          </div>
-        </div>
-
-        <!-- Settings Card -->
-        <div class="glass-card p-5 sm:p-6 rounded-3xl shadow-2xl space-y-4">
-          <div class="flex items-center gap-2.5 mb-2">
-            <span class="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-xs font-extrabold text-white">2</span>
-            <h2 class="font-bold text-sm sm:text-base text-white">Business & Client Info</h2>
-          </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Your Trading Name</label>
-            <input type="text" id="companyName" value="Vestra Trade Services" oninput="updateSettings()" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-white">
-          </div>
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="block text-[11px] font-semibold text-slate-400">Custom Brand Logo</label>
-              <span class="text-[9px] bg-blue-500/20 text-blue-300 font-bold px-2 py-0.5 rounded-full uppercase">Pro Unlimited Only</span>
-            </div>
-            <input type="file" id="logoUpload" accept="image/*" onchange="handleLogoUpload(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 file:cursor-pointer cursor-pointer">
-          </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Bank Sort Code & Account No.</label>
-            <input type="text" id="bankDetails" value="20-40-60 | 87654321" oninput="updateSettings()" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-white">
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-400 mb-1">Client Name</label>
-              <input type="text" id="clientNameInput" value="John Smith" oninput="updateSettings()" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-white">
-            </div>
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-400 mb-1">Job Site Address</label>
-              <input type="text" id="clientAddressInput" value="12 High Street" oninput="updateSettings()" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-white">
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-400 mb-1">Tax / VAT (%)</label>
-              <input type="number" id="taxRate" value="20" oninput="calculateTotals()" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-white">
-            </div>
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-400 mb-1">Discount (£)</label>
-              <input type="number" id="discountVal" value="0" oninput="calculateTotals()" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-white">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- INVOICE PREVIEW -->
-      <div class="lg:col-span-7 flex flex-col items-center">
-        <div id="invoiceSheet" class="w-full bg-white text-slate-900 rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200">
-          <div class="flex justify-between items-start border-b border-slate-100 pb-6 mb-6">
+          <p class="text-xs text-slate-400 leading-relaxed">Speak or type your job description. The studio automatically extracts client details, line items, and monetary totals on the fly.</p>
+          
+          <div class="space-y-3">
+            <textarea id="jobInput" rows="3" placeholder="e.g. Fixed electrical wiring for client Sarah Connor at 42 Industrial Park for 250 pounds..." oninput="parseTextDetails()" class="w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition shadow-inner"></textarea>
+            
             <div class="flex items-center gap-3">
-              <div id="brandLogoContainer" class="w-12 h-12 bg-black rounded-2xl flex items-center justify-center p-2 shadow-md overflow-hidden">
-                <svg id="defaultBrandSvg" viewBox="0 0 600 600" class="w-full h-full fill-white">
-                  <path d="M 150,180 L 250,180 L 300,270 L 350,180 L 450,180 L 300,420 Z" />
-                  <circle cx="270" cy="240" r="14" fill="#000" />
-                  <circle cx="330" cy="240" r="14" fill="#000" />
-                </svg>
+              <button id="recordBtn" onclick="toggleRecord()" class="flex-1 flex items-center justify-center gap-2.5 bg-red-600 hover:bg-red-500 active:scale-95 text-white font-bold py-3.5 px-4 rounded-2xl text-xs transition-all shadow-xl shadow-red-900/40 cursor-pointer">
+                <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                <span id="recordText">Record Voice Command</span>
+              </button>
+              <div id="micStatus" class="hidden flex items-center gap-2 text-xs text-red-400 font-bold px-3 py-2.5 bg-red-500/10 rounded-2xl border border-red-500/20 animate-pulse">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Listening...
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Invoice Customization Settings Card -->
+        <div class="glass-card p-6 rounded-3xl shadow-2xl space-y-4 border border-slate-800/80">
+          <h2 class="font-bold text-sm tracking-wide text-white flex items-center gap-2">
+            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Invoice Configuration
+          </h2>
+          
+          <div class="space-y-3.5">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 mb-1">Company / Business Name</label>
+              <input type="text" id="companyName" value="Vestra Trade Services" oninput="updateSettings()" class="w-full bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 shadow-inner">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-400 mb-1">Client Name</label>
+                <input type="text" id="clientNameInput" value="Acme Corporation" oninput="updateSettings()" class="w-full bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 shadow-inner">
               </div>
               <div>
-                <h3 id="invCompanyName" class="font-extrabold text-lg sm:text-xl text-slate-900 leading-tight">Vestra Trade Services</h3>
-                <p class="text-xs text-slate-500 font-semibold">Official Tax Invoice</p>
+                <label class="block text-[11px] font-bold text-slate-400 mb-1">Tax / VAT Rate (%)</label>
+                <input type="number" id="taxRate" value="20" oninput="calculateTotals()" class="w-full bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 shadow-inner">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 mb-1">Client Street Address / Location</label>
+              <input type="text" id="clientAddressInput" value="45 Innovation Way, London" oninput="updateSettings()" class="w-full bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 shadow-inner">
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 mb-1">Bank Sort Code & Account Details</label>
+              <input type="text" id="bankDetails" value="Sort Code: 40-22-06 | Acc: 89321104" oninput="updateSettings()" class="w-full bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 shadow-inner">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-400 mb-1">Discount Amount (£)</label>
+                <input type="number" id="discountVal" value="0" oninput="calculateTotals()" class="w-full bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 shadow-inner">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-400 mb-1">Company Brand Logo</label>
+                <input type="file" accept="image/*" onchange="handleLogoUpload(event)" class="w-full text-[11px] text-slate-400 file:mr-2 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <button onclick="addNewLineItem()" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-white font-bold py-2.5 rounded-xl text-xs transition cursor-pointer flex items-center justify-center gap-2">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Add Manual Line Item
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Live Preview Panel (7 Columns) -->
+      <div class="lg:col-span-7 space-y-6">
+        
+        <!-- Live Invoice Document Sheet -->
+        <div id="invoiceSheet" class="bg-white text-slate-900 p-8 sm:p-12 rounded-3xl shadow-2xl space-y-8 border border-slate-200">
+          
+          <!-- Document Header -->
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-4">
+              <div id="brandLogoContainer" class="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-extrabold text-xl overflow-hidden shadow-md">V</div>
+              <div>
+                <h1 id="invCompanyName" class="font-extrabold text-lg tracking-tight text-slate-900">Vestra Trade Services</h1>
+                <p class="text-[11px] font-semibold text-slate-500">Professional Commercial & Residential Services</p>
               </div>
             </div>
             <div class="text-right">
-              <span class="inline-block bg-blue-50 text-blue-700 font-extrabold text-[10px] tracking-wider uppercase px-3 py-1 rounded-full">Invoice</span>
-              <p id="invNumberDisplay" class="text-xs font-bold text-slate-800 mt-2">#INV-1001</p>
-              <p id="invDate" class="text-[11px] text-slate-400 font-medium"></p>
+              <span class="text-[10px] font-extrabold px-3 py-1 bg-slate-100 text-slate-700 rounded-full border border-slate-200 uppercase tracking-widest">INVOICE</span>
+              <p id="invNumberDisplay" class="text-xs font-bold text-slate-700 mt-2">INV-2026-001</p>
+              <p id="invDate" class="text-[11px] text-slate-400 mt-0.5">October 3, 2026</p>
             </div>
           </div>
 
-          <div class="bg-slate-50/80 rounded-2xl p-4 grid grid-cols-2 gap-4 mb-6 text-xs border border-slate-100">
+          <!-- Client & Billing Information -->
+          <div class="grid grid-cols-2 gap-4 border-t border-b border-slate-100 py-4">
             <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Client / Customer</p>
-              <p id="invClient" class="font-bold text-slate-900">John Smith</p>
+              <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Billed To:</p>
+              <p id="invClient" class="text-xs font-bold text-slate-900 mt-1">Acme Corporation</p>
+              <p id="invAddress" class="text-xs text-slate-600 mt-0.5">45 Innovation Way, London</p>
             </div>
-            <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Job Site / Address</p>
-              <p id="invAddress" class="text-slate-700 font-medium">12 High Street</p>
+            <div class="text-right">
+              <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Payment Terms:</p>
+              <p class="text-xs font-bold text-slate-900 mt-1">Due Upon Receipt</p>
+              <p class="text-[11px] text-slate-500 mt-0.5">Secure Bank Transfer</p>
             </div>
           </div>
 
-          <div class="mb-6">
-            <div class="grid grid-cols-12 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-200 pb-2 mb-3 px-2">
-              <div class="col-span-8">Work Description</div>
-              <div class="col-span-3 text-right">Amount (£)</div>
-              <div class="col-span-1 text-center print:hidden">Action</div>
+          <!-- Invoice Line Items Table -->
+          <div class="space-y-3">
+            <div class="grid grid-cols-12 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-2">
+              <div class="col-span-8">Description</div>
+              <div class="col-span-4 text-right">Amount</div>
             </div>
-            <div id="itemsContainer" class="space-y-2 min-h-[90px]"></div>
-            <button type="button" onclick="addItem('New Service Item', 0)" class="mt-3 text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 px-3 py-1.5 rounded-xl hover:bg-blue-50 transition print:hidden cursor-pointer">
-              + Add Item
-            </button>
+            <div id="itemsContainer" class="space-y-2">
+              <!-- Dynamically populated items -->
+            </div>
           </div>
 
-          <div class="border-t border-slate-200 pt-5 grid grid-cols-12 gap-4 items-end">
-            <div class="col-span-6 text-[11px] text-slate-500">
-              <p class="font-bold text-slate-800 uppercase text-[9px] tracking-wider mb-1">Payment Details</p>
-              <p id="invBank" class="font-mono text-slate-700 font-semibold">20-40-60 | 87654321</p>
+          <!-- Calculation Totals Section -->
+          <div class="border-t border-slate-100 pt-4 flex flex-col items-end space-y-1.5">
+            <div class="flex justify-between w-64 text-xs">
+              <span class="text-slate-500">Subtotal</span>
+              <span id="invSubtotal" class="font-bold text-slate-900">£0.00</span>
             </div>
-            <div class="col-span-6 space-y-1.5 text-right text-xs">
-              <div class="flex justify-between text-slate-500"><span>Subtotal:</span><span id="invSubtotal" class="font-semibold text-slate-700">£0.00</span></div>
-              <div class="flex justify-between text-slate-500"><span>VAT (<span id="invTaxRate">20</span>%):</span><span id="invTax" class="font-semibold text-slate-700">£0.00</span></div>
-              <div class="flex justify-between text-slate-500"><span>Discount:</span><span id="invDiscount" class="font-semibold text-slate-700">-£0.00</span></div>
-              <div class="flex justify-between font-extrabold text-slate-900 text-lg sm:text-xl border-t border-slate-200 pt-2.5">
-                <span>Total Due:</span>
-                <span id="invTotal" class="text-blue-600">£0.00</span>
-              </div>
+            <div class="flex justify-between w-64 text-xs">
+              <span class="text-slate-500">VAT (<span id="invTaxRate">20</span>%)</span>
+              <span id="invTax" class="font-bold text-slate-900">£0.00</span>
+            </div>
+            <div class="flex justify-between w-64 text-xs">
+              <span class="text-slate-500">Discount Applied</span>
+              <span id="invDiscount" class="font-bold text-emerald-600">-£0.00</span>
+            </div>
+            <div class="flex justify-between w-64 text-sm font-extrabold border-t border-slate-200 pt-2.5 mt-1">
+              <span class="text-slate-900">Total Due</span>
+              <span id="invTotal" class="text-blue-600">£0.00</span>
             </div>
           </div>
+
+          <!-- Document Footer & Bank Instructions -->
+          <div class="border-t border-slate-100 pt-4 text-center space-y-1">
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Direct Bank Payment Instructions</p>
+            <p id="invBank" class="text-xs font-bold text-slate-700">Sort Code: 40-22-06 | Acc: 89321104</p>
+            <p class="text-[10px] text-slate-400 pt-2">Thank you for your valued business!</p>
+          </div>
+
         </div>
 
-        <div class="w-full grid grid-cols-3 gap-3 mt-5">
-          <button type="button" onclick="saveToGalleryAndVault()" class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold py-3.5 px-3 rounded-2xl text-xs transition-all shadow-xl cursor-pointer">
-            🖼️ Save & Archive
+        <!-- Action Control Buttons -->
+        <div class="flex flex-wrap items-center gap-3">
+          <button onclick="saveToGalleryAndVault()" class="flex-1 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold py-3.5 px-6 rounded-2xl text-xs transition-all shadow-xl shadow-blue-600/30 cursor-pointer flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+            Save & Archive to Vault
           </button>
-          <button type="button" onclick="window.print()" class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold py-3.5 px-3 rounded-2xl text-xs transition-all shadow-xl cursor-pointer">
-            📄 Print PDF
+          <button onclick="sendWhatsApp()" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold py-3.5 px-5 rounded-2xl text-xs transition-all shadow-xl shadow-emerald-600/30 cursor-pointer flex items-center gap-2">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+            WhatsApp
           </button>
-          <button type="button" onclick="sendWhatsApp()" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold py-3.5 px-3 rounded-2xl text-xs transition-all shadow-xl shadow-emerald-900/20 cursor-pointer">
-            💬 WhatsApp
+          <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold py-3.5 px-5 rounded-2xl text-xs transition-all cursor-pointer flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            Print PDF
           </button>
         </div>
+
       </div>
+
     </div>
 
-    <!-- VIEW 2: HISTORY VAULT -->
-    <div id="view-history" class="hidden max-w-5xl mx-auto py-6">
-      <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+    <!-- HISTORY VAULT VIEW -->
+    <div id="view-history" class="hidden space-y-6">
+      <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-2xl font-extrabold text-white">Invoice History Archive</h2>
-          <p class="text-xs text-slate-400 mt-1">Review, edit, re-download, or delete past client invoices securely saved in your vault.</p>
+          <h2 class="font-extrabold text-xl text-white">Invoice History Vault</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Securely access, preview, download, or review all previously generated client invoices.</p>
         </div>
-        <div>
-          <button onclick="clearHistoryVault()" class="text-xs text-red-400 hover:text-red-300 font-semibold px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-xl cursor-pointer transition">Clear All</button>
-        </div>
+        <button onclick="clearHistoryVault()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold px-4 py-2 rounded-xl text-xs transition cursor-pointer border border-red-500/20 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          Clear Vault
+        </button>
       </div>
-      <div id="vaultContainer" class="space-y-4">
-        <!-- Injected dynamically -->
+
+      <div id="vaultContainer" class="grid grid-cols-1 gap-4">
+        <!-- Vault records render here -->
       </div>
     </div>
 
-    <!-- VIEW 3: PRICING -->
-    <div id="view-pricing" class="hidden max-w-5xl mx-auto py-8">
-      <div class="text-center mb-10">
-        <h2 class="text-3xl font-extrabold text-white">Choose Your Vestra Plan</h2>
-        <p class="text-xs text-slate-400 mt-2">Upgrade to Pro Unlimited to unlock custom brand logo uploads.</p>
+    <!-- PRICING PLANS VIEW -->
+    <div id="view-pricing" class="hidden max-w-4xl mx-auto space-y-8 py-6">
+      <div class="text-center space-y-2">
+        <h2 class="font-extrabold text-2xl sm:text-3xl text-white">Upgrade Your Studio Plan</h2>
+        <p class="text-xs sm:text-sm text-slate-400">Unlock unlimited invoices, custom company branding, and advanced vault archiving capabilities.</p>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
-          <div>
-            <span class="text-[10px] font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full uppercase border border-blue-500/20">Flexible</span>
-            <h3 class="font-bold text-lg text-white mt-3">1 Day Pass</h3>
-            <div class="my-3"><span class="text-3xl font-extrabold text-white">£0.99</span><span class="text-slate-400 text-xs"> / day</span></div>
-            <p class="text-[11px] text-emerald-400 font-semibold mb-2">⚡ Instant 24-Hour Access</p>
-            <p class="text-[10px] text-slate-300 mb-4">👥 Share account with up to <b>10 team members</b>, write unlimited invoices & use AI voice typing</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Starter Plan -->
+        <div class="glass-card p-8 rounded-3xl flex flex-col justify-between space-y-6 border border-slate-800">
+          <div class="space-y-4">
+            <span class="text-[10px] font-extrabold bg-slate-800 text-slate-300 px-3 py-1 rounded-full uppercase tracking-widest">STARTER</span>
+            <h3 class="font-extrabold text-2xl text-white">Free Tier</h3>
+            <p class="text-xs text-slate-400">Essential tools for occasional personal or light freelance billing.</p>
+            <ul class="space-y-3 text-xs text-slate-300">
+              <li class="flex items-center gap-2.5">✓ Up to 5 Invoices per month</li>
+              <li class="flex items-center gap-2.5">✓ Standard Voice Assistant Parser</li>
+              <li class="flex items-center gap-2.5">✓ Basic PDF Print Export</li>
+            </ul>
           </div>
-          <button onclick="checkout('1 Day Pass', 'day_pass', 10, true)" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Get 1 Day Pass</button>
+          <button onclick="switchTab('studio')" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 rounded-2xl text-xs transition cursor-pointer">Current Plan Active</button>
         </div>
-        <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
-          <div>
-            <span class="text-[10px] font-extrabold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full uppercase border border-indigo-500/20">Best Value</span>
-            <h3 class="font-bold text-lg text-white mt-3">Standard Plan</h3>
-            <div class="my-3"><span class="text-3xl font-extrabold text-white">£3.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
-            <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
-            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 25 team members with full invoice history vault</p>
+
+        <!-- Pro Unlimited Plan -->
+        <div class="glass-card p-8 rounded-3xl flex flex-col justify-between space-y-6 border border-blue-500/50 shadow-2xl shadow-blue-500/10 relative overflow-hidden">
+          <div class="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-extrabold px-4 py-1.5 rounded-bl-2xl uppercase tracking-wider">POPULAR</div>
+          <div class="space-y-4">
+            <span class="text-[10px] font-extrabold bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20 uppercase tracking-widest">PRO UNLIMITED</span>
+            <h3 class="font-extrabold text-2xl text-white">£4.99 <span class="text-xs font-normal text-slate-400">/ month</span></h3>
+            <p class="text-xs text-slate-400">Full professional access designed for independent trades & growing businesses.</p>
+            <ul class="space-y-3 text-xs text-slate-200">
+              <li class="flex items-center gap-2.5">✓ Unlimited Invoices & History Vault Archive</li>
+              <li class="flex items-center gap-2.5">✓ Custom Brand Logo Upload & Watermarking</li>
+              <li class="flex items-center gap-2.5">✓ Advanced Speech Recognition & Parsing</li>
+              <li class="flex items-center gap-2.5">✓ Instant WhatsApp & High-Res PNG Sharing</li>
+            </ul>
           </div>
-          <button onclick="checkout('Standard Plan', 'standard', 25, true)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
-        </div>
-        <div class="glass-card p-6 rounded-3xl border-2 border-blue-500 relative flex flex-col justify-between shadow-2xl">
-          <div>
-            <span class="text-[10px] font-extrabold text-blue-300 bg-blue-500/20 px-2.5 py-1 rounded-full uppercase">Unlimited Access</span>
-            <h3 class="font-bold text-lg text-white mt-3">Pro Unlimited</h3>
-            <div class="my-3"><span class="text-3xl font-extrabold text-white">£4.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
-            <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
-            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 100 team members & <b>Custom Logo Uploads</b></p>
-          </div>
-          <button onclick="checkout('Pro Unlimited', 'pro_unlimited', 100, true)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg cursor-pointer">Start Free Trial</button>
+          <button onclick="checkout('Pro Unlimited', 'pro_unlimited')" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold py-3.5 rounded-2xl text-xs transition shadow-lg shadow-blue-600/30 cursor-pointer">Upgrade to Pro</button>
         </div>
       </div>
     </div>
+
   </main>
 
+  <!-- Footer -->
+  <footer class="w-full border-t border-slate-800/80 bg-slate-950/90 py-6 text-center text-xs text-slate-500">
+    &copy; 2026 Vestra Invoice Studio. All rights reserved. Built for professional trade & commercial workflows.
+  </footer>
+
+  <!-- Script Logic -->
   <script>
-    let isSignUpMode = true;
-
-    function toggleAuthMode(e) {
-      e.preventDefault();
-      isSignUpMode = !isSignUpMode;
-      document.getElementById('auth-title').innerText = isSignUpMode ? "Welcome to Vestra" : "Welcome Back";
-      document.getElementById('auth-subtitle').innerText = isSignUpMode ? "Create your secure account to manage invoices" : "Login to your account to continue";
-      document.getElementById('auth-submit-btn').innerText = isSignUpMode ? "Sign Up" : "Log In";
-      document.getElementById('auth-switch-text').innerText = isSignUpMode ? "Already have an account?" : "Don't have an account?";
-      document.getElementById('auth-switch-link').innerText = isSignUpMode ? "Log in" : "Sign up";
-      hideError();
-    }
-
-    function showError(msg) {
-      const errBox = document.getElementById('auth-error');
-      errBox.innerText = msg;
-      errBox.classList.remove('hidden');
-    }
-
-    function hideError() {
-      const errBox = document.getElementById('auth-error');
-      errBox.innerText = '';
-      errBox.classList.add('hidden');
-    }
-
-    function handleAuthSubmit(e) {
-      e.preventDefault();
-      hideError();
-
-      const email = document.getElementById('auth-email').value.trim().toLowerCase();
-      const password = document.getElementById('auth-password').value;
-
-      let usersDB = JSON.parse(localStorage.getItem('vestra_users_db') || '{}');
-      let activeTeamList = JSON.parse(localStorage.getItem('vestra_team_emails') || '[]');
-      const maxLimit = parseInt(localStorage.getItem('vestra_plan_limit') || '10');
-
-      const isCEO = email === "fazan@vestra.com" || password.toLowerCase().includes("gemini");
-
-      if (isSignUpMode) {
-        if (!isCEO && usersDB[email]) {
-          showError("An account with this email already exists. Please log in.");
-          return;
-        }
-
-        if (!isCEO && !activeTeamList.includes(email) && activeTeamList.length >= maxLimit) {
-          showError(`Team limit reached (${maxLimit} users max for this plan). Please upgrade.`);
-          return;
-        }
-
-        usersDB[email] = password;
-        localStorage.setItem('vestra_users_db', JSON.stringify(usersDB));
-
-        if (!activeTeamList.includes(email)) {
-          activeTeamList.push(email);
-          localStorage.setItem('vestra_team_emails', JSON.stringify(activeTeamList));
-        }
-
-        localStorage.setItem('vestra_logged_in', 'true');
-        localStorage.setItem('vestra_user_email', email);
-
-        if (isCEO) {
-          localStorage.setItem('vestra_sub_active', 'true');
-          localStorage.setItem('vestra_plan_key', 'pro_unlimited');
-          localStorage.setItem('vestra_vault_unlocked', 'true');
-          localStorage.setItem('vestra_plan_limit', '100');
-        }
-
-        checkAccessState();
-
-      } else {
-        if (!usersDB[email]) {
-          if (Object.keys(usersDB).length === 0 || isCEO) {
-            usersDB[email] = password;
-            localStorage.setItem('vestra_users_db', JSON.stringify(usersDB));
-          } else {
-            showError("No account found with this email. Please sign up first.");
-            return;
-          }
-        }
-
-        if (!isCEO && usersDB[email] !== password) {
-          showError("Incorrect password. Please try again.");
-          return;
-        }
-
-        if (!activeTeamList.includes(email)) {
-          if (!isCEO && activeTeamList.length >= maxLimit) {
-            showError(`Workspace limit reached (${maxLimit} maximum users).`);
-            return;
-          }
-          activeTeamList.push(email);
-          localStorage.setItem('vestra_team_emails', JSON.stringify(activeTeamList));
-        }
-
-        localStorage.setItem('vestra_logged_in', 'true');
-        localStorage.setItem('vestra_user_email', email);
-
-        if (isCEO) {
-          localStorage.setItem('vestra_sub_active', 'true');
-          localStorage.setItem('vestra_plan_key', 'pro_unlimited');
-          localStorage.setItem('vestra_vault_unlocked', 'true');
-          localStorage.setItem('vestra_plan_limit', '100');
-        }
-
-        checkAccessState();
-      }
-    }
-
-    function logout() {
-      localStorage.removeItem('vestra_logged_in');
-      checkAccessState();
-    }
-
-    function checkAccessState() {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('unlocked') === 'true') {
-        localStorage.setItem('vestra_sub_active', 'true');
-        localStorage.setItem('vestra_vault_unlocked', 'true');
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
-
-      const isLoggedIn = localStorage.getItem('vestra_logged_in') === 'true';
-      const isSubActive = localStorage.getItem('vestra_sub_active') === 'true';
-
-      const authScreen = document.getElementById('auth-screen');
-      const paywallScreen = document.getElementById('paywall-screen');
-
-      if (!isLoggedIn) {
-        authScreen.classList.remove('hidden');
-        paywallScreen.classList.add('hidden');
-      } else if (!isSubActive) {
-        authScreen.classList.add('hidden');
-        paywallScreen.classList.remove('hidden');
-      } else {
-        authScreen.classList.add('hidden');
-        paywallScreen.classList.add('hidden');
-      }
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      checkAccessState();
-      renderItems();
-      updateSettings();
-    });
-
     let items = [
-      { desc: "I spent £8 on food", amount: 8.00 },
-      { desc: "Fitted 3 double sockets in kitchen", amount: 150.00 }
+      { desc: 'Initial Diagnostic & Service Assessment', amount: 85.00 },
+      { desc: 'Labor & Component Replacement', amount: 150.00 }
     ];
 
-    let currentInvoiceNumber = '#INV-' + Math.floor(1000 + Math.random() * 9000);
+    const currentInvoiceNumber = 'INV-2026-' + Math.floor(100 + Math.random() * 900);
     document.getElementById('invNumberDisplay').innerText = currentInvoiceNumber;
-    document.getElementById('invDate').innerText = new Date().toLocaleDateString('en-GB');
+
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('invDate').innerText = new Date().toLocaleDateString('en-GB', options);
+
+    window.onload = function() {
+      renderItems();
+      updateSettings();
+    };
 
     function switchTab(tab) {
-      const isVaultUnlocked = localStorage.getItem('vestra_vault_unlocked') === 'true';
-      if (tab === 'history' && !isVaultUnlocked) {
-        alert("Invoice History Vault requires a Standard or Pro monthly plan. Please upgrade to unlock.");
-        switchTab('pricing');
-        return;
-      }
-
       document.getElementById('view-studio').classList.add('hidden');
       document.getElementById('view-history').classList.add('hidden');
       document.getElementById('view-pricing').classList.add('hidden');
 
-      document.getElementById('tab-studio').className = "px-3 sm:px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer";
-      document.getElementById('tab-history').className = "px-3 sm:px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer";
-      document.getElementById('tab-pricing').className = "px-3 sm:px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer";
+      document.getElementById('tab-studio').className = "px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-2";
+      document.getElementById('tab-history').className = "px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-2";
+      document.getElementById('tab-pricing').className = "px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-2";
 
       if (tab === 'studio') {
         document.getElementById('view-studio').classList.remove('hidden');
-        document.getElementById('tab-studio').className = "px-3 sm:px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer";
+        document.getElementById('tab-studio').className = "px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-600/30 transition-all cursor-pointer flex items-center gap-2";
       } else if (tab === 'history') {
         document.getElementById('view-history').classList.remove('hidden');
-        document.getElementById('tab-history').className = "px-3 sm:px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer";
+        document.getElementById('tab-history').className = "px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-600/30 transition-all cursor-pointer flex items-center gap-2";
         renderVault();
-      } else {
+      } else if (tab === 'pricing') {
         document.getElementById('view-pricing').classList.remove('hidden');
-        document.getElementById('tab-pricing').className = "px-3 sm:px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer";
+        document.getElementById('tab-pricing').className = "px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-600/30 transition-all cursor-pointer flex items-center gap-2";
       }
     }
 
-    // LOGO UPLOAD STRICTLY RESTRICTED TO PRO UNLIMITED ONLY
-    function handleLogoUpload(event) {
-      const planKey = localStorage.getItem('vestra_plan_key');
-      const email = localStorage.getItem('vestra_user_email');
-      const isCEO = email === "fazan@vestra.com";
+    let isRecording = false;
+    let recognition = null;
 
-      if (!isCEO && planKey !== 'pro_unlimited') {
-        alert("Custom brand logo uploads are strictly restricted to Pro Unlimited members only. Please upgrade your plan.");
-        event.target.value = "";
-        switchTab('pricing');
+    function toggleRecord() {
+      if (!isRecording) {
+        startRecording();
+      } else {
+        stopRecording();
+      }
+    }
+
+    function startRecording() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech recognition is not supported in your browser. Please type your job details instead.");
         return;
       }
 
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const container = document.getElementById('brandLogoContainer');
-          container.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover rounded-xl" alt="Brand Logo">`;
-        };
-        reader.readAsDataURL(file);
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-GB';
+
+      recognition.onstart = () => {
+        isRecording = true;
+        document.getElementById('recordBtn').className = "flex items-center justify-center gap-2.5 bg-slate-700 hover:bg-slate-600 active:scale-95 text-white font-bold py-3.5 px-4 rounded-2xl text-xs transition-all shadow-lg cursor-pointer";
+        document.getElementById('recordText').innerText = "Stop Recording";
+        document.getElementById('micStatus').classList.remove('hidden');
+      };
+
+      recognition.onresult = (event) => {
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          }
+        }
+        const jobInput = document.getElementById('jobInput');
+        if (finalTranscript) {
+          jobInput.value += (jobInput.value ? ' ' : '') + finalTranscript;
+          parseTextDetails();
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        stopRecording();
+      };
+
+      recognition.onend = () => {
+        stopRecording();
+      };
+
+      try {
+        recognition.start();
+      } catch(e) {
+        console.error(e);
+        stopRecording();
       }
+    }
+
+    function stopRecording() {
+      isRecording = false;
+      if (recognition) {
+        try { recognition.stop(); } catch(e){}
+        recognition = null;
+      }
+      document.getElementById('recordBtn').className = "flex items-center justify-center gap-2.5 bg-red-600 hover:bg-red-500 active:scale-95 text-white font-bold py-3.5 px-4 rounded-2xl text-xs transition-all shadow-xl shadow-red-900/40 cursor-pointer";
+      document.getElementById('recordText').innerText = "Record Voice Command";
+      document.getElementById('micStatus').classList.add('hidden');
+    }
+
+    function parseTextDetails() {
+      const text = document.getElementById('jobInput').value;
+      if (!text.trim()) return;
+
+      let foundItems = [];
+      const segments = text.split(/(?:,|\n|\band\b|\bthen\b|\bwith\b)/i);
+      
+      segments.forEach(segment => {
+        let amt = 0;
+        let cleanSeg = segment.trim();
+        let numbers = cleanSeg.match(/\d+(?:\.\d+)?/g);
+        
+        if (numbers && numbers.length > 0) {
+          let explicitMatch = cleanSeg.match(/£\s*(\d+(?:\.\d+)?)/);
+          if (explicitMatch) {
+            amt = parseFloat(explicitMatch[1]);
+          } else if (cleanSeg.toLowerCase().includes('pound') || cleanSeg.toLowerCase().includes('cost') || cleanSeg.toLowerCase().includes('for')) {
+            amt = parseFloat(numbers[numbers.length - 1]);
+          }
+        }
+
+        if (cleanSeg.toLowerCase().includes('client') || cleanSeg.toLowerCase().includes('customer') || cleanSeg.toLowerCase().includes('for ')) {
+          let parts = cleanSeg.split(/(?:client is|customer is|for)\s+/i);
+          if (parts.length > 1) {
+            let potentialName = parts[1].split(/(?:at|on|in|,)/i)[0].trim();
+            if (potentialName) {
+              document.getElementById('clientNameInput').value = potentialName;
+            }
+          }
+        }
+
+        if (cleanSeg.toLowerCase().includes('address') || cleanSeg.toLowerCase().includes('at ')) {
+          let addrParts = cleanSeg.split(/(?:address is|at)\s+/i);
+          if (addrParts.length > 1) {
+            let potentialAddr = addrParts[1].trim();
+            if (potentialAddr) {
+              document.getElementById('clientAddressInput').value = potentialAddr;
+            }
+          }
+        }
+
+        if (amt > 0) {
+          let desc = cleanSeg.replace(/£\s*\d+(?:\.\d+)?/g, '').replace(/\d+(?:\.\d+)?\s*(?:pounds|gbp)/gi, '').trim();
+          desc = desc.replace(/^(?:i spent|i charged|cost|was|is|for)\s+/i, '').trim();
+          if (desc.length < 3) desc = "Custom Service / Materials";
+          desc = desc.charAt(0).toUpperCase() + desc.slice(1);
+          foundItems.push({ desc: desc, amount: amt });
+        }
+      });
+
+      if (foundItems.length > 0) {
+        items = foundItems;
+      }
+
+      renderItems();
+      updateSettings();
+    }
+
+    function addNewLineItem() {
+      items.push({ desc: 'New Service or Item', amount: 50.00 });
+      renderItems();
     }
 
     function renderItems() {
       const container = document.getElementById('itemsContainer');
       container.innerHTML = '';
+
       items.forEach((item, index) => {
         const row = document.createElement('div');
-        row.className = "grid grid-cols-12 gap-2 items-center text-xs text-slate-800 px-2 py-1.5 bg-slate-50 rounded-xl border border-slate-100";
+        row.className = "grid grid-cols-12 gap-2 items-center px-3 py-2 bg-slate-50 rounded-xl border border-slate-200/80 shadow-sm";
         row.innerHTML = `
-          <div class="col-span-8"><input type="text" value="${item.desc}" onchange="items[${index}].desc = this.value" class="w-full bg-transparent font-medium focus:bg-white focus:outline-none px-1 py-0.5 rounded"></div>
-          <div class="col-span-3 text-right"><input type="number" value="${item.amount}" onchange="items[${index}].amount = parseFloat(this.value) || 0; calculateTotals();" class="w-full text-right font-bold bg-transparent focus:bg-white focus:outline-none px-1 py-0.5 rounded"></div>
-          <div class="col-span-1 text-center print:hidden"><button type="button" onclick="items.splice(${index}, 1); renderItems();" class="text-red-400 hover:text-red-600 font-bold cursor-pointer">×</button></div>
+          <div class="col-span-8">
+            <input type="text" value="${item.desc}" oninput="updateItem(${index}, 'desc', this.value)" class="w-full bg-transparent text-xs text-slate-900 font-medium focus:outline-none">
+          </div>
+          <div class="col-span-3 text-right">
+            <input type="number" step="0.01" value="${item.amount.toFixed(2)}" oninput="updateItem(${index}, 'amount', this.value)" class="w-full bg-transparent text-xs text-slate-900 font-bold text-right focus:outline-none">
+          </div>
+          <div class="col-span-1 text-center print:hidden">
+            <button type="button" onclick="removeItem(${index})" class="text-slate-400 hover:text-red-600 font-bold text-sm cursor-pointer transition">×</button>
+          </div>
         `;
         container.appendChild(row);
       });
+
       calculateTotals();
     }
 
-    function addItem(desc, amount) {
-      items.push({ desc, amount });
+    function updateItem(index, field, value) {
+      if (field === 'desc') {
+        items[index].desc = value;
+      } else if (field === 'amount') {
+        items[index].amount = parseFloat(value) || 0;
+      }
+      calculateTotals();
+    }
+
+    function removeItem(index) {
+      items.splice(index, 1);
       renderItems();
     }
 
     function updateSettings() {
-      document.getElementById('invCompanyName').innerText = document.getElementById('companyName').value || 'Your Company';
-      document.getElementById('invBank').innerText = document.getElementById('bankDetails').value || '-';
-      document.getElementById('invClient').innerText = document.getElementById('clientNameInput').value || 'Client Name';
-      document.getElementById('invAddress').innerText = document.getElementById('clientAddressInput').value || 'Address';
+      document.getElementById('invCompanyName').innerText = document.getElementById('companyName').value;
+      document.getElementById('invClient').innerText = document.getElementById('clientNameInput').value;
+      document.getElementById('invAddress').innerText = document.getElementById('clientAddressInput').value;
+      document.getElementById('invBank').innerText = document.getElementById('bankDetails').value;
+      calculateTotals();
     }
 
     function calculateTotals() {
+      let subtotal = 0;
+      items.forEach(item => { subtotal += item.amount; });
+
       const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
       const discount = parseFloat(document.getElementById('discountVal').value) || 0;
-      let subtotal = items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-      let tax = (subtotal * taxRate) / 100;
-      let total = subtotal + tax - discount;
-      if (total < 0) total = 0;
 
-      document.getElementById('invSubtotal').innerText = '£' + subtotal.toFixed(2);
+      const taxAmount = (subtotal * taxRate) / 100;
+      const totalDue = Math.max(0, subtotal + taxAmount - discount);
+
       document.getElementById('invTaxRate').innerText = taxRate;
-      document.getElementById('invTax').innerText = '£' + tax.toFixed(2);
+      document.getElementById('invSubtotal').innerText = '£' + subtotal.toFixed(2);
+      document.getElementById('invTax').innerText = '£' + taxAmount.toFixed(2);
       document.getElementById('invDiscount').innerText = '-£' + discount.toFixed(2);
-      document.getElementById('invTotal').innerText = '£' + total.toFixed(2);
-      return total.toFixed(2);
+      document.getElementById('invTotal').innerText = '£' + totalDue.toFixed(2);
     }
 
-    // WEB SPEECH API & VOICE PARSING
-    let recognition = null;
-    let isRecording = false;
-
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'en-GB';
-
-      recognition.onstart = () => {
-        isRecording = true;
-        document.getElementById('micStatus').classList.remove('hidden');
-        document.getElementById('recordText').innerText = "Listening...";
-        document.getElementById('recordBtn').classList.add('ring-4', 'ring-red-400/50');
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        let cleaned = transcript.replace(/\b(lb|lbs|pound|pounds)\b/gi, '£');
-        document.getElementById('jobInput').value = cleaned;
-        parseTextDetails();
-      };
-
-      recognition.onerror = () => { stopRecordUI(); };
-      recognition.onend = () => { stopRecordUI(); };
-    }
-
-    function toggleRecord() {
-      if (!recognition) {
-        alert("Speech recognition is not supported in your browser. Please try Chrome or Safari.");
-        return;
-      }
-      if (isRecording) { recognition.stop(); } else { recognition.start(); }
-    }
-
-    function stopRecordUI() {
-      isRecording = false;
-      document.getElementById('micStatus').classList.add('hidden');
-      document.getElementById('recordText').innerText = "Record Voice";
-      document.getElementById('recordBtn').classList.remove('ring-4', 'ring-red-400/50');
-    }
-
-    function parseTextDetails() {
-      let rawText = document.getElementById('jobInput').value.trim();
-      if (!rawText) return;
-
-      let clientMatch = rawText.match(/(?:client(?:'s)? name is|client is|for client)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
-      if (clientMatch && clientMatch[1]) {
-        let foundClient = clientMatch[1];
-        document.getElementById('clientNameInput').value = foundClient;
-        document.getElementById('invClient').innerText = foundClient;
-        rawText = rawText.replace(clientMatch[0], '');
-      }
-
-      let parts = rawText.split(/\s+(?:and|plus|,)\s+/i);
-      let newItems = [];
-
-      parts.forEach(part => {
-        part = part.trim();
-        if (!part) return;
-        let amtMatch = part.match(/(?:[£$€]|cost(?:s)?\s*(?:£|\$|€)?)\s*(\d+(?:\.\d{2})?)/i) || part.match(/(\d+(?:\.\d{2})?)\s*(?:pounds|quid|£)/i);
-        let amount = amtMatch ? parseFloat(amtMatch[1]) : 50.00;
-        newItems.push({ desc: part, amount: amount });
-      });
-
-      if (newItems.length > 0) {
-        items = newItems;
-        renderItems();
+    function handleLogoUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          document.getElementById('brandLogoContainer').innerHTML = `<img src="${event.target.result}" class="w-full h-full object-cover rounded-2xl">`;
+        };
+        reader.readAsDataURL(file);
       }
     }
 
-    // INVOICE VAULT ARCHIVE STORAGE
+    function checkout(planName, planKey) {
+      alert(`Successfully subscribed to ${planName}! Your enterprise workspace and features are fully unlocked.`);
+      switchTab('studio');
+    }
+
     function saveToGalleryAndVault() {
-      const isVaultUnlocked = localStorage.getItem('vestra_vault_unlocked') === 'true';
-      if (!isVaultUnlocked) {
-        alert("Saving invoices to the History Vault requires a Standard or Pro monthly plan.");
-        switchTab('pricing');
-        return;
-      } else {
+      const invoiceSheet = document.getElementById('invoiceSheet');
+      
+      html2canvas(invoiceSheet, { scale: 2, useCORS: true }).then(canvas => {
+        const imageURL = canvas.toDataURL('image/png');
+        const downloadLink = document.createElement('a');
+        downloadLink.href = imageURL;
+        downloadLink.download = `${currentInvoiceNumber}-${document.getElementById('clientNameInput').value.replace(/\s+/g, '_')}.png`;
+        downloadLink.click();
+
         let vault = JSON.parse(localStorage.getItem('vestra_invoice_vault') || '[]');
         const invoiceRecord = {
           number: currentInvoiceNumber,
-          date: new Date().toLocaleDateString('en-GB'),
+          date: document.getElementById('invDate').innerText,
           client: document.getElementById('clientNameInput').value,
           address: document.getElementById('clientAddressInput').value,
+          items: [...items],
           total: document.getElementById('invTotal').innerText,
-          items: [...items]
+          image: imageURL
         };
+
         vault.unshift(invoiceRecord);
         localStorage.setItem('vestra_invoice_vault', JSON.stringify(vault));
-      }
 
-      const sheet = document.getElementById('invoiceSheet');
-      html2canvas(sheet, { scale: 2 }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `${currentInvoiceNumber}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+        alert("Invoice successfully downloaded and securely archived in your History Vault!");
+      }).catch(err => {
+        console.error(err);
+        alert("Error capturing invoice image. You can still use Print PDF.");
       });
     }
 
@@ -720,95 +607,68 @@
 
       if (vault.length === 0) {
         vaultContainer.innerHTML = `
-          <div class="glass-card p-10 rounded-3xl text-center">
-            <p class="text-slate-400 text-xs">No invoices archived in your vault yet. Click "Save & Archive" in the Studio after creating an invoice.</p>
+          <div class="glass-card p-12 rounded-3xl text-center text-slate-400 space-y-2">
+            <p class="text-sm font-semibold text-white">No archived invoices found in your vault yet.</p>
+            <p class="text-xs">Create and save an invoice in the Studio to view your history records here.</p>
           </div>
         `;
         return;
       }
 
       vaultContainer.innerHTML = '';
-      vault.forEach((inv, idx) => {
+      vault.forEach((inv, index) => {
         const card = document.createElement('div');
-        card.className = "glass-card p-4 sm:p-5 rounded-2xl flex items-center justify-between border border-slate-800 gap-4";
+        card.className = "glass-card p-5 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-slate-800";
         card.innerHTML = `
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-4 w-full sm:w-auto">
+            <div class="w-16 h-20 bg-slate-800 rounded-xl overflow-hidden border border-slate-700 flex-shrink-0 cursor-pointer shadow-md hover:scale-105 transition" onclick="openPreview('${inv.image}')">
+              <img src="${inv.image}" class="w-full h-full object-cover">
+            </div>
             <div>
-              <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2.5">
                 <span class="font-extrabold text-white text-sm">${inv.number}</span>
-                <span class="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full font-bold border border-blue-500/20">${inv.date}</span>
+                <span class="text-[10px] bg-blue-500/10 text-blue-400 font-bold px-2.5 py-0.5 rounded-full border border-blue-500/20">${inv.date}</span>
               </div>
-              <p class="text-xs text-slate-300 font-semibold mt-1">Client: ${inv.client}</p>
-              <p class="text-[11px] text-slate-400 mt-0.5">${inv.items.length} item(s) included</p>
+              <p class="text-xs text-slate-300 font-semibold mt-1">Client: ${inv.client} (${inv.address})</p>
+              <p class="text-xs text-emerald-400 font-extrabold mt-1">Total Due: ${inv.total} (${inv.items.length} items)</p>
             </div>
           </div>
-          <div class="text-right flex items-center gap-3 sm:gap-4">
-            <div>
-              <span class="text-xs text-slate-400 block">Total Amount</span>
-              <span class="font-extrabold text-emerald-400 text-sm sm:text-base">${inv.total}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <button onclick="editInvoice(${idx})" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition cursor-pointer">Edit</button>
-              <button onclick="deleteSingleVaultItem(${idx})" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold px-3 py-2 rounded-xl transition border border-red-500/20 cursor-pointer">Delete</button>
-            </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <a href="${inv.image}" download="${inv.number}.png" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3.5 py-2.5 rounded-xl text-xs transition cursor-pointer">Download PNG</a>
+            <button onclick="deleteVaultItem(${index})" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold px-3.5 py-2.5 rounded-xl text-xs transition cursor-pointer">Delete</button>
           </div>
         `;
         vaultContainer.appendChild(card);
       });
     }
 
-    function editInvoice(index) {
-      let vault = JSON.parse(localStorage.getItem('vestra_invoice_vault') || '[]');
-      const inv = vault[index];
-      if (inv) {
-        currentInvoiceNumber = inv.number;
-        document.getElementById('invNumberDisplay').innerText = inv.number;
-        document.getElementById('clientNameInput').value = inv.client;
-        document.getElementById('invClient').innerText = inv.client;
-        if (inv.address) {
-          document.getElementById('clientAddressInput').value = inv.address;
-          document.getElementById('invAddress').innerText = inv.address;
-        }
-        items = [...inv.items];
-        renderItems();
-        switchTab('studio');
-      }
+    function openPreview(imgUrl) {
+      const win = window.open();
+      win.document.write(`<iframe src="${imgUrl}" frameborder="0" style="border:0; top:0; left:0; bottom:0; right:0; width:100%; height:100%;" allowfullscreen></iframe>`);
     }
 
-    function deleteSingleVaultItem(index) {
-      let vault = JSON.parse(localStorage.getItem('vestra_invoice_vault') || '[]');
-      vault.splice(index, 1);
-      localStorage.setItem('vestra_invoice_vault', JSON.stringify(vault));
-      renderVault();
+    function deleteVaultItem(index) {
+      if (confirm("Are you sure you want to delete this invoice record from your vault?")) {
+        let vault = JSON.parse(localStorage.getItem('vestra_invoice_vault') || '[]');
+        vault.splice(index, 1);
+        localStorage.setItem('vestra_invoice_vault', JSON.stringify(vault));
+        renderVault();
+      }
     }
 
     function clearHistoryVault() {
-      let vault = JSON.parse(localStorage.getItem('vestra_invoice_vault') || '[]');
-      if (vault.length === 0) {
-        alert("Vault is already empty.");
-        return;
-      }
-      if (confirm("Are you sure you want to clear all archived invoices from your vault?")) {
+      if (confirm("Are you sure you want to clear your entire invoice history vault?")) {
         localStorage.removeItem('vestra_invoice_vault');
         renderVault();
       }
     }
 
-    function checkout(planName, planKey, limit, unlockVault) {
-      localStorage.setItem('vestra_sub_active', 'true');
-      localStorage.setItem('vestra_plan_key', planKey);
-      localStorage.setItem('vestra_plan_limit', limit);
-      localStorage.setItem('vestra_vault_unlocked', unlockVault ? 'true' : 'false');
-      alert(`Success! Subscribed to ${planName}.`);
-      checkAccessState();
-      switchTab('studio');
-    }
-
     function sendWhatsApp() {
       const clientName = document.getElementById('clientNameInput').value;
       const total = document.getElementById('invTotal').innerText;
-      const text = encodeURIComponent(`Hi ${clientName}, here is your invoice total of ${total} from Vestra Trade Services. Thank you for your business!`);
-      window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+      const bank = document.getElementById('invBank').value;
+      const msg = encodeURIComponent(`Hi ${clientName}, here is your invoice summary from Vestra Trade Services. Total due: ${total}. Please make payment to: ${bank}. Thank you!`);
+      window.open(`https://wa.me/?text=${msg}`, '_blank');
     }
   </script>
 </body>
