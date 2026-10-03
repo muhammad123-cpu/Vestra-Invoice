@@ -309,8 +309,7 @@
           <h2 class="text-2xl font-extrabold text-white">Invoice History Archive</h2>
           <p class="text-xs text-slate-400 mt-1">Review, edit, re-download, or delete past client invoices securely saved in your vault.</p>
         </div>
-        <div class="flex items-center gap-2">
-          <button onclick="deleteSelectedVaultItems()" class="text-xs text-red-400 hover:text-red-300 font-semibold px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-xl cursor-pointer transition">Delete Selected</button>
+        <div>
           <button onclick="clearHistoryVault()" class="text-xs text-red-400 hover:text-red-300 font-semibold px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-xl cursor-pointer transition">Clear All</button>
         </div>
       </div>
@@ -734,7 +733,6 @@
         card.className = "glass-card p-4 sm:p-5 rounded-2xl flex items-center justify-between border border-slate-800 gap-4";
         card.innerHTML = `
           <div class="flex items-center gap-3">
-            <input type="checkbox" data-vault-index="${idx}" class="vault-checkbox w-4 h-4 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-0 cursor-pointer">
             <div>
               <div class="flex items-center gap-3">
                 <span class="font-extrabold text-white text-sm">${inv.number}</span>
@@ -782,23 +780,6 @@
       vault.splice(index, 1);
       localStorage.setItem('vestra_invoice_vault', JSON.stringify(vault));
       renderVault();
-    }
-
-    function deleteSelectedVaultItems() {
-      let vault = JSON.parse(localStorage.getItem('vestra_invoice_vault') || '[]');
-      const checkboxes = document.querySelectorAll('.vault-checkbox:checked');
-      
-      if (checkboxes.length === 0) {
-        alert("Please select at least one invoice using the checkboxes to delete.");
-        return;
-      }
-
-      if (confirm(`Are you sure you want to delete ${checkboxes.length} selected invoice(s)?`)) {
-        const indicesToDelete = Array.from(checkboxes).map(cb => parseInt(cb.getAttribute('data-vault-index')));
-        vault = vault.filter((_, idx) => !indicesToDelete.includes(idx));
-        localStorage.setItem('vestra_invoice_vault', JSON.stringify(vault));
-        renderVault();
-      }
     }
 
     function clearHistoryVault() {
