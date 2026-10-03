@@ -27,53 +27,53 @@
 </head>
 <body class="bg-[#050811] text-slate-100 min-h-screen flex flex-col selection:bg-blue-500 selection:text-white">
 
-  <!-- FULL AUTHENTICATION GATE SCREEN -->
-  <div id="auth-screen" class="fixed inset-0 z-50 bg-[#050811] flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-sm p-6 sm:p-8 rounded-3xl shadow-2xl border border-slate-800">
-      
-      <!-- LOGO & TITLE -->
-      <div class="flex flex-col items-center mb-6">
-        <div class="w-12 h-12 bg-black rounded-2xl flex items-center justify-center p-2 border border-slate-800 shadow-lg ring-1 ring-white/10 mb-3">
+  <!-- PAYWALL LOCK SCREEN (Blocks free loaders on web launch) -->
+  <div id="paywall-screen" class="fixed inset-0 z-50 bg-[#050811] flex items-center justify-center p-4 overflow-y-auto">
+    <div class="max-w-4xl w-full py-10">
+      <div class="text-center mb-8">
+        <div class="w-14 h-14 bg-black rounded-2xl flex items-center justify-center p-2.5 mx-auto border border-slate-800 shadow-xl ring-1 ring-white/10 mb-3">
           <svg viewBox="0 0 600 600" class="w-full h-full fill-white">
             <path d="M 150,180 L 250,180 L 300,270 L 350,180 L 450,180 L 300,420 Z" />
             <circle cx="270" cy="240" r="14" fill="#000" />
             <circle cx="330" cy="240" r="14" fill="#000" />
           </svg>
         </div>
-        <h2 id="auth-title" class="text-base font-extrabold text-white tracking-wider">Login to your account</h2>
-        <p id="auth-subtitle" class="text-[11px] text-slate-400 mt-1 text-center">Enter your email below to login to your account</p>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-wider">VESTRA VOICE INVOICING</h1>
+        <p class="text-xs sm:text-sm text-slate-400 mt-2">Choose an active plan to unlock instant AI voice invoicing for your trade business.</p>
       </div>
 
-      <!-- FORM -->
-      <form onsubmit="handleAuth(event)" class="space-y-4">
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-300 mb-1.5">Email</label>
-          <input type="email" id="auth-email" required placeholder="m@example.com" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500">
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="block text-[11px] font-semibold text-slate-300">Password</label>
-            <a href="#" onclick="alert('Password reset link sent to your email.')" class="text-[10px] text-blue-400 hover:underline">Forgot your password?</a>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Plan 1 -->
+        <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
+          <div>
+            <span class="text-[10px] font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full uppercase border border-blue-500/20">Flexible</span>
+            <h3 class="font-bold text-lg text-white mt-3">1 Day Pass</h3>
+            <div class="my-3"><span class="text-3xl font-extrabold text-white">£0.99</span><span class="text-slate-400 text-xs"> / day</span></div>
+            <p class="text-[11px] text-emerald-400 font-semibold mb-4">⚡ Instant Access</p>
           </div>
-          <input type="password" id="auth-password" required class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-white">
+          <button onclick="checkout('1 Day Pass')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Get 1 Day Pass</button>
         </div>
-
-        <button type="submit" id="auth-submit-btn" class="w-full bg-slate-100 hover:bg-white text-slate-900 font-bold py-2.5 rounded-xl text-xs transition-all shadow-lg active:scale-95 cursor-pointer">
-          Login
-        </button>
-
-        <button type="button" onclick="handleGoogleLogin()" class="w-full glass-input hover:bg-slate-800/80 text-slate-200 font-semibold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24"><path fill="currentColor" d="M12.24 10.285V14h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.584s3.344-7.584 7.439-7.584c2.33 0 3.894.99 4.788 1.849l3.251-3.138C18.158 1.478 15.458 0 12.24 0 5.48 0 0 5.48 0 12.24s5.48 12.24 12.24 12.24c7.058 0 11.734-4.966 11.734-11.986 0-.83-.082-1.464-.182-2.009z"/></svg>
-          Login with Google
-        </button>
-      </form>
-
-      <div class="text-center mt-5 text-xs text-slate-400">
-        <span id="auth-switch-text">Don't have an account?</span> 
-        <a href="#" onclick="toggleAuthMode(event)" id="auth-switch-link" class="text-blue-400 font-semibold hover:underline ml-1">Sign up</a>
+        <!-- Plan 2 -->
+        <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
+          <div>
+            <span class="text-[10px] font-extrabold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full uppercase border border-indigo-500/20">Best Value</span>
+            <h3 class="font-bold text-lg text-white mt-3">Standard Plan</h3>
+            <div class="my-3"><span class="text-3xl font-extrabold text-white">£3.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
+            <p class="text-[11px] text-emerald-400 font-semibold mb-4">✨ 3 Days Free Trial Included</p>
+          </div>
+          <button onclick="checkout('Standard Plan')" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
+        </div>
+        <!-- Plan 3 -->
+        <div class="glass-card p-6 rounded-3xl border-2 border-blue-500 relative flex flex-col justify-between shadow-2xl">
+          <div>
+            <span class="text-[10px] font-extrabold text-blue-300 bg-blue-500/20 px-2.5 py-1 rounded-full uppercase">Unlimited Access</span>
+            <h3 class="font-bold text-lg text-white mt-3">Pro Unlimited</h3>
+            <div class="my-3"><span class="text-3xl font-extrabold text-white">£4.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
+            <p class="text-[11px] text-emerald-400 font-semibold mb-4">✨ 3 Days Free Trial Included</p>
+          </div>
+          <button onclick="checkout('Pro Unlimited')" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg cursor-pointer">Start Free Trial</button>
+        </div>
       </div>
-
     </div>
   </div>
 
@@ -98,7 +98,7 @@
           <button id="tab-studio" onclick="switchTab('studio')" class="px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer">1. Studio</button>
           <button id="tab-pricing" onclick="switchTab('pricing')" class="px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer">2. Plans & Pricing</button>
         </div>
-        <button onclick="logout()" class="text-xs text-slate-400 hover:text-red-400 font-semibold px-3 py-2 rounded-xl transition cursor-pointer">Logout</button>
+        <button onclick="lockApp()" class="text-xs text-slate-400 hover:text-red-400 font-semibold px-3 py-2 rounded-xl transition cursor-pointer">Lock App</button>
       </nav>
     </div>
   </header>
@@ -247,7 +247,7 @@
     <div id="view-pricing" class="hidden max-w-5xl mx-auto py-8">
       <div class="text-center mb-10">
         <h2 class="text-3xl font-extrabold text-white">Choose Your Vestra Plan</h2>
-        <p class="text-xs text-slate-400 mt-2">All plans include a 3-day free trial before billing starts.</p>
+        <p class="text-xs text-slate-400 mt-2">All plans include secure checkout via Stripe.</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
@@ -255,9 +255,9 @@
             <span class="text-[10px] font-extrabold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-full uppercase border border-blue-500/20">Flexible</span>
             <h3 class="font-bold text-lg text-white mt-3">1 Day Pass</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£0.99</span><span class="text-slate-400 text-xs"> / day</span></div>
-            <p class="text-[11px] text-emerald-400 font-semibold mb-4">✨ 3 Days Free Trial Included</p>
+            <p class="text-[11px] text-emerald-400 font-semibold mb-4">⚡ Instant Access</p>
           </div>
-          <button onclick="checkout('1 Day Pass')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
+          <button onclick="checkout('1 Day Pass')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Get 1 Day Pass</button>
         </div>
         <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
           <div>
@@ -282,49 +282,26 @@
   </main>
 
   <script>
-    let isSignUp = false;
-
-    // Toggle between Login and Sign Up views inside the authentication gate
-    function toggleAuthMode(e) {
-      e.preventDefault();
-      isSignUp = !isSignUp;
-      document.getElementById('auth-title').innerText = isSignUp ? "Create an account" : "Login to your account";
-      document.getElementById('auth-subtitle').innerText = isSignUp ? "Enter your email below to create your account" : "Enter your email below to login to your account";
-      document.getElementById('auth-submit-btn').innerText = isSignUp ? "Create account" : "Login";
-      document.getElementById('auth-switch-text').innerText = isSignUp ? "Already have an account?" : "Don't have an account?";
-      document.getElementById('auth-switch-link').innerText = isSignUp ? "Login" : "Sign up";
-    }
-
-    // Handle form submission (Login / Sign Up)
-    function handleAuth(e) {
-      e.preventDefault();
-      const email = document.getElementById('auth-email').value;
-      if (email) {
-        localStorage.setItem('vestra_logged_in', 'true');
-        document.getElementById('auth-screen').classList.add('hidden');
-      }
-    }
-
-    // Handle Google sign in button
-    function handleGoogleLogin() {
-      localStorage.setItem('vestra_logged_in', 'true');
-      document.getElementById('auth-screen').classList.add('hidden');
-    }
-
-    // Logout action to bring back the auth screen
-    function logout() {
-      localStorage.removeItem('vestra_logged_in');
-      document.getElementById('auth-screen').classList.remove('hidden');
-    }
-
-    // Check login state immediately when page loads
+    // Check Stripe redirect token or saved session on load
     window.addEventListener('DOMContentLoaded', () => {
-      if (localStorage.getItem('vestra_logged_in') === 'true') {
-        document.getElementById('auth-screen').classList.add('hidden');
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('unlocked') === 'true') {
+        localStorage.setItem('vestra_sub_active', 'true');
+        // Clean URL parameter so it looks clean
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      if (localStorage.getItem('vestra_sub_active') === 'true') {
+        document.getElementById('paywall-screen').classList.add('hidden');
       } else {
-        document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('paywall-screen').classList.remove('hidden');
       }
     });
+
+    function lockApp() {
+      localStorage.removeItem('vestra_sub_active');
+      document.getElementById('paywall-screen').classList.remove('hidden');
+    }
 
     let items = [
       { desc: "Fitted 3 double sockets in kitchen", amount: 150.00 },
