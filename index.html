@@ -27,7 +27,7 @@
 </head>
 <body class="bg-[#050811] text-slate-100 min-h-screen flex flex-col selection:bg-blue-500 selection:text-white">
 
-  <!-- AUTHENTICATION OVERLAY SCREEN -->
+  <!-- FULL AUTHENTICATION GATE SCREEN -->
   <div id="auth-screen" class="fixed inset-0 z-50 bg-[#050811] flex items-center justify-center p-4">
     <div class="glass-card w-full max-w-sm p-6 sm:p-8 rounded-3xl shadow-2xl border border-slate-800">
       
@@ -59,11 +59,11 @@
           <input type="password" id="auth-password" required class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-white">
         </div>
 
-        <button type="submit" id="auth-submit-btn" class="w-full bg-slate-100 hover:bg-white text-slate-900 font-bold py-2.5 rounded-xl text-xs transition-all shadow-lg active:scale-95">
+        <button type="submit" id="auth-submit-btn" class="w-full bg-slate-100 hover:bg-white text-slate-900 font-bold py-2.5 rounded-xl text-xs transition-all shadow-lg active:scale-95 cursor-pointer">
           Login
         </button>
 
-        <button type="button" onclick="handleGoogleLogin()" class="w-full glass-input hover:bg-slate-800/80 text-slate-200 font-semibold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2">
+        <button type="button" onclick="handleGoogleLogin()" class="w-full glass-input hover:bg-slate-800/80 text-slate-200 font-semibold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24"><path fill="currentColor" d="M12.24 10.285V14h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.584s3.344-7.584 7.439-7.584c2.33 0 3.894.99 4.788 1.849l3.251-3.138C18.158 1.478 15.458 0 12.24 0 5.48 0 0 5.48 0 12.24s5.48 12.24 12.24 12.24c7.058 0 11.734-4.966 11.734-11.986 0-.83-.082-1.464-.182-2.009z"/></svg>
           Login with Google
         </button>
@@ -95,10 +95,10 @@
       </div>
       <nav class="flex items-center gap-3">
         <div class="flex gap-1 bg-slate-900/90 p-1 rounded-2xl border border-slate-800">
-          <button id="tab-studio" onclick="switchTab('studio')" class="px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all">1. Studio</button>
-          <button id="tab-pricing" onclick="switchTab('pricing')" class="px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all">2. Plans & Pricing</button>
+          <button id="tab-studio" onclick="switchTab('studio')" class="px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer">1. Studio</button>
+          <button id="tab-pricing" onclick="switchTab('pricing')" class="px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer">2. Plans & Pricing</button>
         </div>
-        <button onclick="logout()" class="text-xs text-slate-400 hover:text-red-400 font-semibold px-3 py-2 rounded-xl transition">Logout</button>
+        <button onclick="logout()" class="text-xs text-slate-400 hover:text-red-400 font-semibold px-3 py-2 rounded-xl transition cursor-pointer">Logout</button>
       </nav>
     </div>
   </header>
@@ -122,11 +122,11 @@
             Listening... Speak now!
           </div>
           <div class="grid grid-cols-2 gap-3 mt-4">
-            <button type="button" onclick="toggleRecord()" id="recordBtn" class="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 active:scale-95 text-white font-bold py-3 px-4 rounded-2xl text-xs transition-all shadow-lg shadow-red-900/30">
+            <button type="button" onclick="toggleRecord()" id="recordBtn" class="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 active:scale-95 text-white font-bold py-3 px-4 rounded-2xl text-xs transition-all shadow-lg shadow-red-900/30 cursor-pointer">
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
               <span id="recordText">Record Voice</span>
             </button>
-            <button type="button" onclick="parseTextDetails()" class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold py-3 px-4 rounded-2xl text-xs transition-all shadow-lg shadow-blue-900/30">
+            <button type="button" onclick="parseTextDetails()" class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold py-3 px-4 rounded-2xl text-xs transition-all shadow-lg shadow-blue-900/30 cursor-pointer">
               ⚡ Build Invoice
             </button>
           </div>
@@ -210,7 +210,7 @@
               <div class="col-span-1 text-center print:hidden">Action</div>
             </div>
             <div id="itemsContainer" class="space-y-2 min-h-[90px]"></div>
-            <button type="button" onclick="addItem('New Service Item', 0)" class="mt-3 text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 px-3 py-1.5 rounded-xl hover:bg-blue-50 transition print:hidden">
+            <button type="button" onclick="addItem('New Service Item', 0)" class="mt-3 text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 px-3 py-1.5 rounded-xl hover:bg-blue-50 transition print:hidden cursor-pointer">
               + Add Item
             </button>
           </div>
@@ -233,10 +233,10 @@
         </div>
 
         <div class="w-full grid grid-cols-2 gap-4 mt-5">
-          <button type="button" onclick="window.print()" class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold py-3.5 px-4 rounded-2xl text-xs transition-all shadow-xl">
+          <button type="button" onclick="window.print()" class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold py-3.5 px-4 rounded-2xl text-xs transition-all shadow-xl cursor-pointer">
             📄 Print / PDF
           </button>
-          <button type="button" onclick="sendWhatsApp()" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold py-3.5 px-4 rounded-2xl text-xs transition-all shadow-xl shadow-emerald-900/20">
+          <button type="button" onclick="sendWhatsApp()" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold py-3.5 px-4 rounded-2xl text-xs transition-all shadow-xl shadow-emerald-900/20 cursor-pointer">
             💬 WhatsApp
           </button>
         </div>
@@ -257,7 +257,7 @@
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£0.99</span><span class="text-slate-400 text-xs"> / day</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-4">✨ 3 Days Free Trial Included</p>
           </div>
-          <button onclick="checkout('1 Day Pass')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all">Start Free Trial</button>
+          <button onclick="checkout('1 Day Pass')" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
         </div>
         <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
           <div>
@@ -266,7 +266,7 @@
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£3.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-4">✨ 3 Days Free Trial Included</p>
           </div>
-          <button onclick="checkout('Standard Plan')" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all">Start Free Trial</button>
+          <button onclick="checkout('Standard Plan')" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
         </div>
         <div class="glass-card p-6 rounded-3xl border-2 border-blue-500 relative flex flex-col justify-between shadow-2xl">
           <div>
@@ -275,7 +275,7 @@
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£4.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-4">✨ 3 Days Free Trial Included</p>
           </div>
-          <button onclick="checkout('Pro Unlimited')" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg">Start Free Trial</button>
+          <button onclick="checkout('Pro Unlimited')" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg cursor-pointer">Start Free Trial</button>
         </div>
       </div>
     </div>
@@ -283,6 +283,8 @@
 
   <script>
     let isSignUp = false;
+
+    // Toggle between Login and Sign Up views inside the authentication gate
     function toggleAuthMode(e) {
       e.preventDefault();
       isSignUp = !isSignUp;
@@ -293,27 +295,34 @@
       document.getElementById('auth-switch-link').innerText = isSignUp ? "Login" : "Sign up";
     }
 
+    // Handle form submission (Login / Sign Up)
     function handleAuth(e) {
       e.preventDefault();
-      if (document.getElementById('auth-email').value) {
+      const email = document.getElementById('auth-email').value;
+      if (email) {
         localStorage.setItem('vestra_logged_in', 'true');
         document.getElementById('auth-screen').classList.add('hidden');
       }
     }
 
+    // Handle Google sign in button
     function handleGoogleLogin() {
       localStorage.setItem('vestra_logged_in', 'true');
       document.getElementById('auth-screen').classList.add('hidden');
     }
 
+    // Logout action to bring back the auth screen
     function logout() {
       localStorage.removeItem('vestra_logged_in');
       document.getElementById('auth-screen').classList.remove('hidden');
     }
 
+    // Check login state immediately when page loads
     window.addEventListener('DOMContentLoaded', () => {
       if (localStorage.getItem('vestra_logged_in') === 'true') {
         document.getElementById('auth-screen').classList.add('hidden');
+      } else {
+        document.getElementById('auth-screen').classList.remove('hidden');
       }
     });
 
@@ -328,13 +337,13 @@
       if (tab === 'studio') {
         document.getElementById('view-studio').classList.remove('hidden');
         document.getElementById('view-pricing').classList.add('hidden');
-        document.getElementById('tab-studio').className = "px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all";
-        document.getElementById('tab-pricing').className = "px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all";
+        document.getElementById('tab-studio').className = "px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer";
+        document.getElementById('tab-pricing').className = "px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer";
       } else {
         document.getElementById('view-studio').classList.add('hidden');
         document.getElementById('view-pricing').classList.remove('hidden');
-        document.getElementById('tab-pricing').className = "px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all";
-        document.getElementById('tab-studio').className = "px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all";
+        document.getElementById('tab-pricing').className = "px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-lg transition-all cursor-pointer";
+        document.getElementById('tab-studio').className = "px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all cursor-pointer";
       }
     }
 
@@ -347,7 +356,7 @@
         row.innerHTML = `
           <div class="col-span-8"><input type="text" value="${item.desc}" onchange="items[${index}].desc = this.value" class="w-full bg-transparent font-medium focus:bg-white focus:outline-none px-1 py-0.5 rounded"></div>
           <div class="col-span-3 text-right"><input type="number" value="${item.amount}" onchange="items[${index}].amount = parseFloat(this.value) || 0; calculateTotals();" class="w-full text-right font-bold bg-transparent focus:bg-white focus:outline-none px-1 py-0.5 rounded"></div>
-          <div class="col-span-1 text-center print:hidden"><button type="button" onclick="items.splice(${index}, 1); renderItems();" class="text-red-400 hover:text-red-600 font-bold">×</button></div>
+          <div class="col-span-1 text-center print:hidden"><button type="button" onclick="items.splice(${index}, 1); renderItems();" class="text-red-400 hover:text-red-600 font-bold cursor-pointer">×</button></div>
         `;
         container.appendChild(row);
       });
