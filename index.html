@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vestra - Voice Invoicing Engine</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Include html2canvas for saving invoices to gallery/downloads -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -163,7 +165,7 @@
             </div>
             <span class="text-[10px] bg-blue-500/10 text-blue-400 font-bold px-2.5 py-1 rounded-full border border-blue-500/20">Voice AI</span>
           </div>
-          <textarea id="jobInput" rows="4" class="w-full glass-input rounded-2xl p-3.5 text-xs text-slate-200 focus:outline-none transition resize-none leading-relaxed" placeholder="Tap Record Voice or type e.g. Fitted 3 double sockets for £150 and fixed kitchen light switch for £40. Client is John Smith at 12 High Street."></textarea>
+          <textarea id="jobInput" rows="4" class="w-full glass-input rounded-2xl p-3.5 text-xs text-slate-200 focus:outline-none transition resize-none leading-relaxed" placeholder="Tap Record Voice or type e.g. I spent £8 on food and fitted sockets for £150. Client is John Smith at 12 High Street."></textarea>
           <div id="micStatus" class="hidden text-[11px] font-semibold text-red-400 flex items-center gap-2 mt-2">
             <span class="w-2.5 h-2.5 bg-red-500 rounded-full pulse-rec"></span>
             Listening... Speak now!
@@ -279,11 +281,14 @@
           </div>
         </div>
 
-        <div class="w-full grid grid-cols-2 gap-4 mt-5">
-          <button type="button" onclick="window.print()" class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold py-3.5 px-4 rounded-2xl text-xs transition-all shadow-xl cursor-pointer">
-            📄 Print / PDF
+        <div class="w-full grid grid-cols-3 gap-3 mt-5">
+          <button type="button" onclick="saveToGallery()" class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold py-3.5 px-3 rounded-2xl text-xs transition-all shadow-xl cursor-pointer">
+            🖼️ Save Gallery
           </button>
-          <button type="button" onclick="sendWhatsApp()" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold py-3.5 px-4 rounded-2xl text-xs transition-all shadow-xl shadow-emerald-900/20 cursor-pointer">
+          <button type="button" onclick="window.print()" class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold py-3.5 px-3 rounded-2xl text-xs transition-all shadow-xl cursor-pointer">
+            📄 Print PDF
+          </button>
+          <button type="button" onclick="sendWhatsApp()" class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold py-3.5 px-3 rounded-2xl text-xs transition-all shadow-xl shadow-emerald-900/20 cursor-pointer">
             💬 WhatsApp
           </button>
         </div>
@@ -365,7 +370,6 @@
       const email = document.getElementById('auth-email').value.trim().toLowerCase();
       const password = document.getElementById('auth-password').value;
 
-      // Get stored user accounts registry or initialize
       let usersDB = JSON.parse(localStorage.getItem('vestra_users_db') || '{}');
       let activeTeamList = JSON.parse(localStorage.getItem('vestra_team_emails') || '[]');
       const maxLimit = parseInt(localStorage.getItem('vestra_plan_limit') || '10');
@@ -413,7 +417,6 @@
           }
         }
 
-        // STRICT PASSWORD CHECK (Bypassed for CEO)
         if (!isCEO && usersDB[email] !== password) {
           showError("Incorrect password. Please try again or click 'Forgot password?'.");
           return;
@@ -431,7 +434,6 @@
         localStorage.setItem('vestra_logged_in', 'true');
         localStorage.setItem('vestra_user_email', email);
 
-        // Auto-unlock CEO Pro Status
         if (isCEO) {
           localStorage.setItem('vestra_sub_active', 'true');
           localStorage.setItem('vestra_plan_limit', '100');
@@ -446,7 +448,6 @@
       checkAccessState();
     }
 
-    // Comprehensive Gate State Checker
     function checkAccessState() {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('unlocked') === 'true') {
@@ -477,8 +478,8 @@
     });
 
     let items = [
-      { desc: "Fitted 3 double sockets in kitchen", amount: 150.00 },
-      { desc: "Fixed light switch", amount: 40.00 }
+      { desc: "I spent £8 on food", amount: 8.00 },
+      { desc: "Fitted 3 double sockets in kitchen", amount: 150.00 }
     ];
 
     document.getElementById('invDate').innerText = new Date().toLocaleDateString('en-GB');
@@ -539,21 +540,40 @@
       document.getElementById('invTotal').innerText = '£' + (total > 0 ? total.toFixed(2) : '0.00');
     }
 
+    // Upgraded Smart Text Parser (Handles "spent £8 on food", "for", "at", etc.)
     function parseTextDetails() {
       const text = document.getElementById('jobInput').value.trim();
       if (!text) return;
-      const clientMatch = text.match(/client\s+is\s+([a-zA-Z\s]+?)(?:\s+at|\s+for|\.|$)/i);
+      
+      const clientMatch = text.match(/client\s+is\s+([a-zA-Z\s]+?)(?:\s+at|\s+for|\s+on|\.|$)/i);
       if (clientMatch && clientMatch[1]) document.getElementById('clientNameInput').value = clientMatch[1].trim();
       const addressMatch = text.match(/at\s+(\d+[^.]+?)(?:\.|$)/i);
       if (addressMatch && addressMatch[1]) document.getElementById('clientAddressInput').value = addressMatch[1].trim();
       
-      const priceRegex = /(.*?)(?:for|at)\s*£\s*(\d+(?:\.\d+)?)/gi;
+      const priceRegex = /(?:I\s+)?(?:spent|paid|charged|bought)?\s*(.*?)\s+(?:for|at|on)\s*£\s*(\d+(?:\.\d+)?)/gi;
       let match, parsed = [];
       while ((match = priceRegex.exec(text)) !== null) {
         let desc = match[1].replace(/client\s+is\s+[a-zA-Z\s]+/gi, '').replace(/^(and|,|\.|\s)+/gi, '').trim();
         let amt = parseFloat(match[2]);
-        if (desc && !isNaN(amt)) parsed.push({ desc: desc.charAt(0).toUpperCase() + desc.slice(1), amount: amt });
+        
+        if (!desc || desc.toLowerCase() === 'i' || desc.toLowerCase() === 'spent' || desc.toLowerCase() === 'paid') {
+          desc = "Expense / Item";
+        }
+        
+        if (!isNaN(amt)) {
+          parsed.push({ desc: desc.charAt(0).toUpperCase() + desc.slice(1), amount: amt });
+        }
       }
+
+      if (parsed.length === 0) {
+        const fallbackPrice = text.match(/£\s*(\d+(?:\.\d+)?)/);
+        if (fallbackPrice) {
+          let amt = parseFloat(fallbackPrice[1]);
+          let cleanDesc = text.replace(/£\s*\d+(?:\.\d+)?/g, '').replace(/(for|at|on|spent|paid|I)/gi, '').trim();
+          parsed.push({ desc: cleanDesc ? cleanDesc.charAt(0).toUpperCase() + cleanDesc.slice(1) : "General Service", amount: amt });
+        }
+      }
+
       if (parsed.length > 0) items = parsed;
       updateSettings();
       renderItems();
@@ -590,6 +610,19 @@
       isRecording = false;
       document.getElementById('recordText').innerText = "Record Voice";
       document.getElementById('micStatus').classList.add('hidden');
+    }
+
+    // Save Invoice as PNG Image directly to Device Gallery / Downloads
+    function saveToGallery() {
+      const sheet = document.getElementById('invoiceSheet');
+      html2canvas(sheet, { scale: 2 }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `Vestra-Invoice-${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }).catch(err => {
+        alert("Could not save image. Try using Print / PDF instead.");
+      });
     }
 
     function sendWhatsApp() {
