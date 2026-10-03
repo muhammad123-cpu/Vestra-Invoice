@@ -81,7 +81,7 @@
           </svg>
         </div>
         <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-wider">CHOOSE YOUR SUBSCRIPTION</h1>
-        <p class="text-xs sm:text-sm text-slate-400 mt-2">Unlock custom brand logo uploads and your invoice history archive.</p>
+        <p class="text-xs sm:text-sm text-slate-400 mt-2">Upgrade to Standard or Pro to unlock custom brand logo uploads and the history vault.</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -91,9 +91,9 @@
             <h3 class="font-bold text-lg text-white mt-3">1 Day Pass</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£0.99</span><span class="text-slate-400 text-xs"> / day</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-2">⚡ Instant 24-Hour Access</p>
-            <p class="text-[10px] text-slate-400 mb-4">🖼️ Custom Brand Logo & Vault</p>
+            <p class="text-[10px] text-slate-500 mb-4">❌ No logo upload or vault history</p>
           </div>
-          <button onclick="checkout('1 Day Pass', 10)" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Get 1 Day Pass</button>
+          <button onclick="checkout('1 Day Pass', 1, false)" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Get 1 Day Pass</button>
         </div>
         <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
           <div>
@@ -101,9 +101,9 @@
             <h3 class="font-bold text-lg text-white mt-3">Standard Plan</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£3.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
-            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 25 team members</p>
+            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 25 team members & Logo + Vault</p>
           </div>
-          <button onclick="checkout('Standard Plan', 25)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
+          <button onclick="checkout('Standard Plan', 25, true)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
         </div>
         <div class="glass-card p-6 rounded-3xl border-2 border-blue-500 relative flex flex-col justify-between shadow-2xl">
           <div>
@@ -111,9 +111,9 @@
             <h3 class="font-bold text-lg text-white mt-3">Pro Unlimited</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£4.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
-            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 100 team members</p>
+            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 100 team members & Logo + Vault</p>
           </div>
-          <button onclick="checkout('Pro Unlimited', 100)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg cursor-pointer">Start Free Trial</button>
+          <button onclick="checkout('Pro Unlimited', 100, true)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg cursor-pointer">Start Free Trial</button>
         </div>
       </div>
       <div class="text-center mt-6">
@@ -192,8 +192,8 @@
           </div>
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="block text-[11px] font-semibold text-slate-400">Custom Brand Logo (Premium)</label>
-              <span class="text-[9px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full uppercase">Locked Feature</span>
+              <label class="block text-[11px] font-semibold text-slate-400">Custom Brand Logo</label>
+              <span class="text-[9px] bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded-full uppercase">Standard / Pro Plan</span>
             </div>
             <input type="file" id="logoUpload" accept="image/*" onchange="handleLogoUpload(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 file:cursor-pointer cursor-pointer">
           </div>
@@ -309,7 +309,7 @@
           <h2 class="text-2xl font-extrabold text-white">Invoice History Archive</h2>
           <p class="text-xs text-slate-400 mt-1">Review, re-download, or check past client invoices securely saved in your vault.</p>
         </div>
-        <button onclick="clearHistory Vault()" class="text-xs text-red-400 hover:text-red-300 font-semibold px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-xl cursor-pointer">Clear Archive</button>
+        <button onclick="clearHistoryVault()" class="text-xs text-red-400 hover:text-red-300 font-semibold px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-xl cursor-pointer">Clear Archive</button>
       </div>
       <div id="vaultContainer" class="space-y-4">
         <!-- Injected dynamically -->
@@ -320,7 +320,7 @@
     <div id="view-pricing" class="hidden max-w-5xl mx-auto py-8">
       <div class="text-center mb-10">
         <h2 class="text-3xl font-extrabold text-white">Choose Your Vestra Plan</h2>
-        <p class="text-xs text-slate-400 mt-2">Unlock custom brand logo uploads and your invoice history archive.</p>
+        <p class="text-xs text-slate-400 mt-2">Upgrade to Standard or Pro to unlock custom brand logo uploads and the history vault.</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
@@ -329,9 +329,9 @@
             <h3 class="font-bold text-lg text-white mt-3">1 Day Pass</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£0.99</span><span class="text-slate-400 text-xs"> / day</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-2">⚡ Instant 24-Hour Access</p>
-            <p class="text-[10px] text-slate-400 mb-4">🖼️ Custom Brand Logo & Vault</p>
+            <p class="text-[10px] text-slate-500 mb-4">❌ No logo upload or vault history</p>
           </div>
-          <button onclick="checkout('1 Day Pass', 10)" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Get 1 Day Pass</button>
+          <button onclick="checkout('1 Day Pass', 1, false)" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Get 1 Day Pass</button>
         </div>
         <div class="glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
           <div>
@@ -339,9 +339,9 @@
             <h3 class="font-bold text-lg text-white mt-3">Standard Plan</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£3.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
-            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 25 team members</p>
+            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 25 team members & Logo + Vault</p>
           </div>
-          <button onclick="checkout('Standard Plan', 25)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
+          <button onclick="checkout('Standard Plan', 25, true)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all cursor-pointer">Start Free Trial</button>
         </div>
         <div class="glass-card p-6 rounded-3xl border-2 border-blue-500 relative flex flex-col justify-between shadow-2xl">
           <div>
@@ -349,9 +349,9 @@
             <h3 class="font-bold text-lg text-white mt-3">Pro Unlimited</h3>
             <div class="my-3"><span class="text-3xl font-extrabold text-white">£4.99</span><span class="text-slate-400 text-xs"> / mo</span></div>
             <p class="text-[11px] text-emerald-400 font-semibold mb-2">✨ 3 Days Free Trial Included</p>
-            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 100 team members</p>
+            <p class="text-[10px] text-slate-400 mb-4">👥 Up to 100 team members & Logo + Vault</p>
           </div>
-          <button onclick="checkout('Pro Unlimited', 100)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg cursor-pointer">Start Free Trial</button>
+          <button onclick="checkout('Pro Unlimited', 100, true)" class="w-full bg-blue-600 hover:bg-blue-500 font-bold py-3 rounded-2xl text-xs text-white transition-all shadow-lg cursor-pointer">Start Free Trial</button>
         </div>
       </div>
     </div>
@@ -420,6 +420,7 @@
 
         if (isCEO) {
           localStorage.setItem('vestra_sub_active', 'true');
+          localStorage.setItem('vestra_vault_unlocked', 'true');
           localStorage.setItem('vestra_plan_limit', '100');
         }
 
@@ -455,6 +456,7 @@
 
         if (isCEO) {
           localStorage.setItem('vestra_sub_active', 'true');
+          localStorage.setItem('vestra_vault_unlocked', 'true');
           localStorage.setItem('vestra_plan_limit', '100');
         }
 
@@ -471,6 +473,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('unlocked') === 'true') {
         localStorage.setItem('vestra_sub_active', 'true');
+        localStorage.setItem('vestra_vault_unlocked', 'true');
         window.history.replaceState({}, document.title, window.location.pathname);
       }
 
@@ -508,9 +511,9 @@
     document.getElementById('invDate').innerText = new Date().toLocaleDateString('en-GB');
 
     function switchTab(tab) {
-      const isSubActive = localStorage.getItem('vestra_sub_active') === 'true';
-      if (tab === 'history' && !isSubActive) {
-        alert("Invoice History Vault is a premium feature. Please choose a plan to unlock full access.");
+      const isVaultUnlocked = localStorage.getItem('vestra_vault_unlocked') === 'true';
+      if (tab === 'history' && !isVaultUnlocked) {
+        alert("Invoice History Vault requires a Standard or Pro monthly plan. Please upgrade to unlock.");
         switchTab('pricing');
         return;
       }
@@ -536,12 +539,13 @@
       }
     }
 
-    // LOGO UPLOAD (PREMIUM CHECK)
+    // LOGO UPLOAD (RESTRICTED TO STANDARD & PRO PLANS)
     function handleLogoUpload(event) {
-      const isSubActive = localStorage.getItem('vestra_sub_active') === 'true';
-      if (!isSubActive) {
-        alert("Custom brand logo upload is a premium feature. Please upgrade your plan to unlock branding.");
+      const isVaultUnlocked = localStorage.getItem('vestra_vault_unlocked') === 'true';
+      if (!isVaultUnlocked) {
+        alert("Custom brand logo upload requires a Standard or Pro monthly plan.");
         event.target.value = "";
+        switchTab('pricing');
         return;
       }
 
@@ -675,9 +679,11 @@
 
     // INVOICE VAULT ARCHIVE STORAGE
     function saveToGalleryAndVault() {
-      const isSubActive = localStorage.getItem('vestra_sub_active') === 'true';
-      if (!isSubActive) {
-        alert("Saving invoices to the History Vault requires a premium subscription.");
+      const isVaultUnlocked = localStorage.getItem('vestra_vault_unlocked') === 'true';
+      if (!isVaultUnlocked) {
+        alert("Saving invoices to the History Vault requires a Standard or Pro monthly plan.");
+        switchTab('pricing');
+        return;
       } else {
         let vault = JSON.parse(localStorage.getItem('vestra_invoice_vault') || '[]');
         const invoiceRecord = {
@@ -759,10 +765,11 @@
       }
     }
 
-    function checkout(planName, limit) {
+    function checkout(planName, limit, unlockVault) {
       localStorage.setItem('vestra_sub_active', 'true');
       localStorage.setItem('vestra_plan_limit', limit);
-      alert(`Success! Subscribed to ${planName}. Brand logo uploads and History Vault unlocked.`);
+      localStorage.setItem('vestra_vault_unlocked', unlockVault ? 'true' : 'false');
+      alert(`Success! Subscribed to ${planName}.`);
       checkAccessState();
       switchTab('studio');
     }
