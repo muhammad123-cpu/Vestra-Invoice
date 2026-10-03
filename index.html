@@ -27,7 +27,7 @@
 </head>
 <body class="bg-[#050811] text-slate-100 min-h-screen flex flex-col selection:bg-blue-500 selection:text-white">
 
-  <!-- STEP 1: AUTHENTICATION SCREEN (Login / Sign Up First) -->
+  <!-- STEP 1: AUTHENTICATION SCREEN (Email & Password Only) -->
   <div id="auth-screen" class="fixed inset-0 z-50 bg-[#050811] flex items-center justify-center p-4">
     <div class="glass-card w-full max-w-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-slate-800">
       <div class="flex flex-col items-center mb-6">
@@ -55,11 +55,7 @@
           <input type="password" id="auth-password" required placeholder="••••••••" class="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500">
         </div>
         <button type="submit" id="auth-submit-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-lg active:scale-95 cursor-pointer">
-          Sign Up / Login
-        </button>
-        <button type="button" onclick="handleSocialLogin()" class="w-full glass-input hover:bg-slate-800/80 text-slate-200 font-semibold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24"><path fill="currentColor" d="M12.24 10.285V14h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.584s3.344-7.584 7.439-7.584c2.33 0 3.894.99 4.788 1.849l3.251-3.138C18.158 1.478 15.458 0 12.24 0 5.48 0 0 5.48 0 12.24s5.48 12.24 12.24 12.24c7.058 0 11.734-4.966 11.734-11.986 0-.83-.082-1.464-.182-2.009z"/></svg>
-          Continue with Google
+          Sign Up
         </button>
       </form>
       <div class="text-center mt-5 text-xs text-slate-400">
@@ -347,12 +343,6 @@
         localStorage.setItem('vestra_user_email', email);
         checkAccessState();
       }
-    }
-
-    function handleSocialLogin() {
-      localStorage.setItem('vestra_logged_in', 'true');
-      localStorage.setItem('vestra_user_email', 'google_user@vestra.app');
-      checkAccessState();
     }
 
     function logout() {
