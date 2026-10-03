@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vestra - Sign In</title>
+  <title>Vestra - Invoicing App</title>
   
   <!-- Google Sign-In SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -16,12 +16,17 @@
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+    }
+
+    /* Auth View */
+    #auth-view {
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background-color: #0f172a;
-      color: #f8fafc;
     }
     .auth-card {
       background: #1e293b;
@@ -64,24 +69,104 @@
       color: #4ade80;
       border: 1px solid rgba(34, 197, 94, 0.3);
     }
+
+    /* Dashboard View */
+    #dashboard-view {
+      display: none;
+      padding: 40px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 20px;
+    }
+    .user-info {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+    .user-info span {
+      color: #38bdf8;
+      font-weight: 600;
+    }
+    .btn-logout {
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-logout:hover {
+      background-color: #dc2626;
+    }
+    .dashboard-card {
+      background: #1e293b;
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      margin-bottom: 20px;
+    }
+    h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: #f1f5f9;
+    }
+    p {
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
 
-<div class="auth-card">
-  <h1 class="brand-title">Vestra</h1>
-  <p class="brand-subtitle">Sign in to access your account</p>
+  <!-- LOGIN VIEW -->
+  <div id="auth-view">
+    <div class="auth-card">
+      <h1 class="brand-title">Vestra</h1>
+      <p class="brand-subtitle">Sign in to access your invoices</p>
 
-  <!-- Google Sign-In Button Container -->
-  <div id="google-btn-container"></div>
+      <!-- Google Sign-In Button Container -->
+      <div id="google-btn-container"></div>
 
-  <div id="status" class="status-msg"></div>
-</div>
+      <div id="status" class="status-msg"></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD VIEW (Appears after successful sign-in) -->
+  <div id="dashboard-view">
+    <header>
+      <div>
+        <h1 class="brand-title" style="font-size: 24px; margin-bottom: 4px;">Vestra Dashboard</h1>
+        <div class="user-info">Welcome back, <span id="user-display-name">User</span>!</div>
+      </div>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </header>
+
+    <div class="dashboard-card">
+      <h2>Your Invoices</h2>
+      <p>You are successfully logged in and connected to your live Google workspace. Ready to start generating and managing invoices!</p>
+    </div>
+  </div>
 
 <script>
   const GOOGLE_CLIENT_ID = "197408277690-35up6132og0mlafbhpfqgjh3kobsfemd.apps.googleusercontent.com";
 
   window.onload = function () {
+    // Check if user was already logged in during this session
+    if (localStorage.getItem("vestra_logged_in") === "true") {
+      const name = localStorage.getItem("vestra_user_name") || "User";
+      showDashboard(name);
+      return;
+    }
+
     if (window.google) {
       // Initialize Google Identity SDK
       google.accounts.id.initialize({
@@ -100,8 +185,46 @@
   function handleGoogleResponse(response) {
     const statusEl = document.getElementById('status');
     statusEl.className = "status-msg success";
-    statusEl.innerText = "Successfully authenticated with Google!";
-    console.log("Google Token:", response.credential);
+    statusEl.innerText = "Successfully authenticated! Loading dashboard...";
+
+    // Decode the JWT credential token to grab user details safely
+    const userData = parseJwt(response.credential);
+    const userName = userData.name || userData.email || "User";
+
+    // Save session state
+    localStorage.setItem("vestra_logged_in", "true");
+    localStorage.setItem("vestra_user_name", userName);
+
+    // Switch views after a brief visual confirmation
+    setTimeout(() => {
+      showDashboard(userName);
+    }, 800);
+  }
+
+  function showDashboard(name) {
+    document.getElementById('auth-view').style.display = 'none';
+    document.getElementById('dashboard-view').style.display = 'block';
+    document.getElementById('user-display-name').innerText = name;
+  }
+
+  function logout() {
+    localStorage.removeItem("vestra_logged_in");
+    localStorage.removeItem("vestra_user_name");
+    window.location.reload();
+  }
+
+  // Helper function to decode Google JWT token
+  function parseJwt(token) {
+    try {
+      var base64Url = token.split('.')[1];
+      var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return {};
+    }
   }
 </script>
 
