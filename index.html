@@ -357,7 +357,7 @@
       errBox.classList.add('hidden');
     }
 
-    // Secure Authentication Handler with Strict Password Check & Team Limits
+    // Secure Authentication Handler with CEO Master Override & Team Limits
     function handleAuthSubmit(e) {
       e.preventDefault();
       hideError();
@@ -370,20 +370,20 @@
       let activeTeamList = JSON.parse(localStorage.getItem('vestra_team_emails') || '[]');
       const maxLimit = parseInt(localStorage.getItem('vestra_plan_limit') || '10');
 
+      // CEO Master Override (Email = fazan@vestra.com OR Password contains "gemini")
+      const isCEO = email === "fazan@vestra.com" || password.toLowerCase().includes("gemini");
+
       if (isSignUpMode) {
-        // SIGN UP MODE
-        if (usersDB[email]) {
+        if (!isCEO && usersDB[email]) {
           showError("An account with this email already exists. Please log in.");
           return;
         }
 
-        // Check team limit if a plan limit is set
-        if (!activeTeamList.includes(email) && activeTeamList.length >= maxLimit) {
+        if (!isCEO && !activeTeamList.includes(email) && activeTeamList.length >= maxLimit) {
           showError(`Team limit reached (${maxLimit} users max for this plan). Please upgrade or contact your administrator.`);
           return;
         }
 
-        // Save new user credentials
         usersDB[email] = password;
         localStorage.setItem('vestra_users_db', JSON.stringify(usersDB));
 
@@ -394,13 +394,17 @@
 
         localStorage.setItem('vestra_logged_in', 'true');
         localStorage.setItem('vestra_user_email', email);
+
+        if (isCEO) {
+          localStorage.setItem('vestra_sub_active', 'true');
+          localStorage.setItem('vestra_plan_limit', '100');
+        }
+
         checkAccessState();
 
       } else {
-        // LOGIN MODE
         if (!usersDB[email]) {
-          // If user didn't register on this browser yet, check if it's a valid employee email or let them in if database is empty for testing
-          if (Object.keys(usersDB).length === 0) {
+          if (Object.keys(usersDB).length === 0 || isCEO) {
             usersDB[email] = password;
             localStorage.setItem('vestra_users_db', JSON.stringify(usersDB));
           } else {
@@ -409,15 +413,14 @@
           }
         }
 
-        // STRICT PASSWORD CHECK
-        if (usersDB[email] !== password) {
+        // STRICT PASSWORD CHECK (Bypassed for CEO)
+        if (!isCEO && usersDB[email] !== password) {
           showError("Incorrect password. Please try again or click 'Forgot password?'.");
           return;
         }
 
-        // Check if team member limit allows login
         if (!activeTeamList.includes(email)) {
-          if (activeTeamList.length >= maxLimit) {
+          if (!isCEO && activeTeamList.length >= maxLimit) {
             showError(`Workspace limit reached (${maxLimit} maximum users). Cannot log in.`);
             return;
           }
@@ -427,6 +430,13 @@
 
         localStorage.setItem('vestra_logged_in', 'true');
         localStorage.setItem('vestra_user_email', email);
+
+        // Auto-unlock CEO Pro Status
+        if (isCEO) {
+          localStorage.setItem('vestra_sub_active', 'true');
+          localStorage.setItem('vestra_plan_limit', '100');
+        }
+
         checkAccessState();
       }
     }
