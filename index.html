@@ -3,72 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reseller Quick Profit Calculator</title>
+    <title>GameAssetX | Keep 90% of Your Asset Sales</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
-        <h1 class="text-xl font-bold mb-1 text-white">Reseller Margin Calculator</h1>
-        <p class="text-sm text-slate-400 mb-6">Calculate your exact take-home cash after platform fees.</p>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-sky-500 selection:text-slate-950">
+
+    <!-- Hero Section -->
+    <div class="max-w-4xl mx-auto px-6 pt-20 pb-16 text-center">
+        <div class="inline-flex items-center gap-2 bg-slate-900 border border-sky-500/30 text-sky-400 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-6 shadow-lg shadow-sky-500/5">
+            <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+            Developer Protection Escrow • 10% Flat Fee
+        </div>
         
-        <div class="space-y-4">
-            <div>
-                <label class="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1">Buy Price (£)</label>
-                <input type="number" id="buyPrice" placeholder="e.g. 50" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500">
-            </div>
-            
-            <div>
-                <label class="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1">Sell Price (£)</label>
-                <input type="number" id="sellPrice" placeholder="e.g. 120" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500">
-            </div>
+        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+            Keep <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">90%</span> of your game asset earnings.
+        </h1>
+        
+        <p class="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Major asset stores drain up to 30% of your hard work on 3D models, code frameworks, and audio packs. We charge a flat 10% developer protection fee—leaving the revenue where it belongs.
+        </p>
+        
+        <!-- Waitlist Form -->
+        <form class="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto mb-16" onsubmit="event.preventDefault(); alert('You are on the priority creator waitlist!');">
+            <input type="email" placeholder="Enter your professional email..." required class="bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-xl px-4 py-3.5 text-white outline-none flex-grow text-sm shadow-inner transition">
+            <button type="submit" class="bg-sky-400 hover:bg-sky-300 text-slate-950 font-bold px-6 py-3.5 rounded-xl text-sm transition shadow-lg shadow-sky-400/20 cursor-pointer">
+                Join Creator Waitlist
+            </button>
+        </form>
+    </div>
 
-            <div>
-                <label class="block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1">Estimated Postage/Shipping (£)</label>
-                <input type="number" id="shipping" placeholder="e.g. 3.49" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500">
-            </div>
+    <!-- Interactive Earnings Comparison Calculator -->
+    <div class="max-w-3xl mx-auto px-6 pb-24">
+        <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-sm shadow-2xl">
+            <h2 class="text-xl font-bold text-white mb-2 text-center">See Your Payout Difference</h2>
+            <p class="text-sm text-slate-400 text-center mb-8">Compare standard 30% legacy store cuts against our flat 10% model.</p>
 
-            <div class="pt-4 border-t border-slate-800 mt-6 space-y-2">
-                <div class="flex justify-between text-sm">
-                    <span class="text-slate-400">Net Profit:</span>
-                    <span id="netProfit" class="font-bold text-emerald-400 text-lg">£0.00</span>
+            <div class="mb-8">
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-slate-300 font-medium">Monthly Asset Sales Volume:</span>
+                    <span id="salesValue" class="font-bold text-sky-400 text-base">£2,500</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-slate-400">Return on Investment (ROI):</span>
-                    <span id="roi" class="font-semibold text-indigo-400">0%</span>
+                <input type="range" id="salesSlider" min="200" max="15000" step="100" value="2500" class="w-full accent-sky-400 bg-slate-800 h-2 rounded-lg cursor-pointer">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-800/80">
+                <div class="bg-slate-950/60 border border-slate-800/60 rounded-2xl p-5 text-center">
+                    <span class="text-xs font-medium text-slate-400 uppercase tracking-wider block mb-1">Standard 30% Store Cut</span>
+                    <span id="oldEarnings" class="text-2xl font-bold text-rose-400">£1,750</span>
+                    <span class="text-xs text-slate-500 block mt-1">You lose £750 to platform fees</span>
+                </div>
+                <div class="bg-sky-950/20 border border-sky-500/30 rounded-2xl p-5 text-center relative overflow-hidden">
+                    <div class="absolute -right-12 -top-12 w-24 h-24 bg-sky-500/10 rounded-full blur-xl"></div>
+                    <span class="text-xs font-medium text-sky-300 uppercase tracking-wider block mb-1">Our 10% Protection Model</span>
+                    <span id="newEarnings" class="text-2xl font-bold text-emerald-400">£2,250</span>
+                    <span id="extraCash" class="text-xs text-sky-400 font-semibold block mt-1">+£500 extra in your pocket</span>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const buyInput = document.getElementById('buyPrice');
-        const sellInput = document.getElementById('sellPrice');
-        const shipInput = document.getElementById('shipping');
-        const netProfitEl = document.getElementById('netProfit');
-        const roiEl = document.getElementById('roi');
+        const slider = document.getElementById('salesSlider');
+        const salesValue = document.getElementById('salesValue');
+        const oldEarnings = document.getElementById('oldEarnings');
+        const newEarnings = document.getElementById('newEarnings');
+        const extraCash = document.getElementById('extraCash');
 
-        function calculate() {
-            const buy = parseFloat(buyInput.value) || 0;
-            const sell = parseFloat(sellInput.value) || 0;
-            const ship = parseFloat(shipInput.value) || 0;
-
-            // Assuming standard zero seller fees platform (like Vinted) or adjust as needed
-            const net = sell - buy - ship;
-            const roi = buy > 0 ? (net / buy) * 100 : 0;
-
-            netProfitEl.textContent = `£${net.toFixed(2)}`;
-            roiEl.textContent = `${roi.toFixed(1)}%`;
+        function updateCalculator() {
+            const val = parseInt(slider.value);
+            salesValue.textContent = `£${val.toLocaleString()}`;
             
-            if (net < 0) {
-                netProfitEl.className = "font-bold text-rose-500 text-lg";
-            } else {
-                netProfitEl.className = "font-bold text-emerald-400 text-lg";
-            }
+            const oldTake = val * 0.70;
+            const newTake = val * 0.90;
+            const diff = newTake - oldTake;
+
+            oldEarnings.textContent = `£${Math.round(oldTake).toLocaleString()}`;
+            newEarnings.textContent = `£${Math.round(newTake).toLocaleString()}`;
+            extraCash.textContent = `+£${Math.round(diff).toLocaleString()} extra in your pocket`;
         }
 
-        [buyInput, sellInput, shipInput].forEach(input => {
-            input.addEventListener('input', calculate);
-        });
+        slider.addEventListener('input', updateCalculator);
     </script>
 </body>
 </html>
